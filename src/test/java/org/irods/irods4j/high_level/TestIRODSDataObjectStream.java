@@ -33,7 +33,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class TestDataObjectStream {
+class TestIRODSDataObjectStream {
 
 	static final Logger log = LogManager.getLogger();
 
