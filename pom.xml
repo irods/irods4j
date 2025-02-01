@@ -2,9 +2,43 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<groupId>org.irods</groupId>
 	<artifactId>irods4j</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>irods4j</name>
+	<description>A Java client library for iRODS 4.3.2+</description>
+	<url>https://github.com/irods/irods4j</url>
+	<inceptionYear>2025</inceptionYear>
+
+	<organization>
+		<name>iRODS Consortium</name>
+		<url>https://irods.org</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>BSD-3-Clause</name>
+			<url>https://spdx.org/licenses/BSD-3-Clause.html</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>iRODS Development Team</name>
+			<email>support@irods.org</email>
+			<organization>iRODS Consortium</organization>
+			<organizationUrl>https://irods.org</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:https://github.com/irods/irods4.git</connection>
+		<developerConnection>scm:git:private</developerConnection>
+		<url>https://github.com/irods/irods4j</url>
+	</scm>
 
 	<properties>
 		<maven.compiler.release>17</maven.compiler.release>
@@ -57,26 +91,24 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
+			<!--
+			Plugin definition for publishing to Maven Central. To use, make sure your
+			settings.xml file contains the appropriate authentication
+			information. See the following URL for details:
+
+			https://central.sonatype.org/publish/publish-portal-maven/#publishing-by-using-the-maven-plugin
+			-->
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.7.1</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<descriptorRefs>
-								<descriptorRef>jar-with-dependencies</descriptorRef>
-							</descriptorRefs>
-						</configuration>
-					</execution>
-				</executions>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>0.7.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<publishingServerId>central</publishingServerId>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
