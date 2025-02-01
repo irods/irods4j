@@ -41,7 +41,6 @@ public class MsParam_PI_Deserializer extends JsonDeserializer<MsParam_PI> {
 		p1.nextToken();
 		try {
 			var clazz = Class.forName("org.irods.irods4j.low_level.protocol.packing_instructions." + v.type);
-			System.out.println("Class.forName returned: " + clazz);
 			v.inOutStruct = ctxt.readValue(p1, clazz);
 		} catch (ClassNotFoundException e) {
 			throw new IOException(e);

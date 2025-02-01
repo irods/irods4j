@@ -47,7 +47,7 @@ See the [high-level unit tests](src/test/java/org/irods/irods4j/high_level) for 
 
 - IRODSDataObjectStream
 
-## Low-level APIs
+## Low-Level APIs
 
 **IMPORTANT: Not all API operations are supported by the high-level APIs.**
 
