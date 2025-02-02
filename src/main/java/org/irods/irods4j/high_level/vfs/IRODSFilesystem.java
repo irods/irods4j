@@ -12,12 +12,13 @@ import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.common.Reference;
 import org.irods.irods4j.high_level.administration.IRODSUsers;
 import org.irods.irods4j.high_level.catalog.IRODSQuery;
+import org.irods.irods4j.high_level.common.AdminTag;
 import org.irods.irods4j.high_level.vfs.ObjectStatus.ObjectType;
 import org.irods.irods4j.low_level.api.IRODSApi;
+import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.api.IRODSErrorCodes;
 import org.irods.irods4j.low_level.api.IRODSException;
 import org.irods.irods4j.low_level.api.IRODSKeywords;
-import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.protocol.packing_instructions.CollInpNew_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.CollOprStat_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjCopyInp_PI;
@@ -63,19 +64,12 @@ public class IRODSFilesystem {
 		private static final int IN_RECURSIVE_COPY = 32;
 	}
 
-	// TODO Consider porting metadata types and functions.
-
-	// TODO Consider moving this into a shared/common location/package.
-	private static final class AdminTag {
-	}
-
 	/**
-	 * A value used to indicate that the operation must be executed using rodsadmin
-	 * level privileges.
+	 * Instructs the server to execute operations using rodsadmin level privileges.
 	 * 
 	 * @since 0.1.0
 	 */
-	public static final AdminTag asAdmin = new AdminTag();
+	public static final AdminTag asAdmin = AdminTag.instance;
 
 	/**
 	 * 

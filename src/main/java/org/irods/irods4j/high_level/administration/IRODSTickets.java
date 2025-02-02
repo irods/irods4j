@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
+import org.irods.irods4j.high_level.common.AdminTag;
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.api.IRODSException;
@@ -17,10 +18,12 @@ public class IRODSTickets {
 		READ, WRITE
 	}
 
-	private static final class AdminTag {
-	};
-
-	public static final AdminTag asAdmin = new AdminTag();
+	/**
+	 * Instructs the server to execute operations using rodsadmin level privileges.
+	 * 
+	 * @since 0.1.0
+	 */
+	public static final AdminTag asAdmin = AdminTag.instance;
 
 	public static void createTicket(RcComm comm, String ticketName, TicketType ticketType, String logicalPath)
 			throws IOException, IRODSException {

@@ -8,10 +8,11 @@ import java.util.HashMap;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.Reference;
 import org.irods.irods4j.high_level.catalog.IRODSQuery;
+import org.irods.irods4j.high_level.common.AdminTag;
 import org.irods.irods4j.low_level.api.IRODSApi;
+import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.api.IRODSException;
 import org.irods.irods4j.low_level.api.IRODSKeywords;
-import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.KeyValPair_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.TransferStat_PI;
@@ -35,15 +36,12 @@ public class IRODSReplicas {
 		IF_EMPTY, ALWAYS
 	}
 
-	private static final class AdminTag {
-	}
-
 	/**
-	 * Instructs operation to use administrative privileges.
+	 * Instructs the server to execute operations using rodsadmin level privileges.
 	 * 
 	 * @since 0.1.0
 	 */
-	public static final AdminTag asAdmin = new AdminTag();
+	public static final AdminTag asAdmin = AdminTag.instance;
 
 	/**
 	 * Returns the size of a replica in the catalog.
