@@ -48,6 +48,10 @@ See the [high-level unit tests](src/test/java/org/irods/irods4j/high_level) for 
 - IRODSDataObjectInputStream
 - IRODSDataObjectOutputStream
 
+### Metadata APIs
+
+- IRODSMetadata
+
 ### Rule Execution APIs
 
 - IRODSRules
