@@ -15,6 +15,20 @@ This library provides a low-level API which exposes data types and functions see
 - Enables patterns supported by the iRODS C/C++ APIs
 - Supports PAM via the `pam_password` authentication scheme
 
+## Maven
+
+The library is available via the [Central Maven Repository](https://central.sonatype.com).
+
+To use it, add the following to your pom.xml file.
+
+```xml
+<dependency>
+    <groupId>org.irods</groupId>
+    <artifactId>irods4j</artifactId>
+    <version>0.1.0</version>
+</dependency>
+```
+
 ## High-Level APIs
 
 See the [high-level unit tests](src/test/java/org/irods/irods4j/high_level) for usage examples.
