@@ -61,3 +61,7 @@ For those users needing more control, see [IRODSApi.java](src/main/java/org/irod
 For proper usage, see the implementation of various high-level APIs and their C counterparts.
 
 See the [low-level unit tests](src/test/java/org/irods/irods4j/low_level) for usage examples.
+
+## Reporting Security Vulnerabilities
+
+See [SECURITY.md](SECURITY.md) for details.
