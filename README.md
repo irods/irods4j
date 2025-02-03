@@ -27,7 +27,6 @@ See the [high-level unit tests](src/test/java/org/irods/irods4j/high_level) for 
 ### Administration APIs
 
 - IRODSResources
-- IRODSRules
 - IRODSTickets
 - IRODSUsers
 - IRODSZones
@@ -46,6 +45,10 @@ See the [high-level unit tests](src/test/java/org/irods/irods4j/high_level) for 
 ### I/O APIs
 
 - IRODSDataObjectStream
+
+### Rule Execution APIs
+
+- IRODSRules
 
 ## Low-Level APIs
 
