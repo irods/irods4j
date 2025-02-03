@@ -35,7 +35,7 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:https://github.com/irods/irods4.git</connection>
+		<connection>scm:git:https://github.com/irods/irods4j.git</connection>
 		<developerConnection>scm:git:private</developerConnection>
 		<url>https://github.com/irods/irods4j</url>
 	</scm>
