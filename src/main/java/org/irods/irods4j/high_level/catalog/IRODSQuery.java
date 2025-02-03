@@ -472,7 +472,7 @@ public class IRODSQuery {
 	 * of the rows early, return false from the {@code rowHandler}.
 	 * 
 	 * @param comm       A connection to an iRODS server.
-	 * @param query      The query to execute.
+	 * @param queryArgs  The structure describing the query to execute.
 	 * @param rowHandler The callback used to process a single row.
 	 * 
 	 * @throws IOException    If a network error occurs.

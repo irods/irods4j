@@ -20,7 +20,9 @@ import org.irods.irods4j.low_level.protocol.packing_instructions.KeyValPair_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.OpenedDataObjInp_PI;
 
 /**
+ * A class which enables reading and writing of iRODS data objects.
  * 
+ * @since 0.1.0
  */
 public class IRODSDataObjectStream implements AutoCloseable {
 
@@ -32,36 +34,82 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	private String replicaToken;
 
 	/**
+	 * Instructions for the iRODS server following a successful close of a data
+	 * object.
 	 * 
+	 * @since 0.1.0
 	 */
 	public static class OnCloseSuccess {
+		
+		/**
+		 * Instructs the server to update the replica size.
+		 * 
+		 * @since 0.1.0
+		 */
 		public boolean updateSize = true;
+		
+		/**
+		 * Instructs the server to update the replica status.
+		 * 
+		 * @since 0.1.0
+		 */
 		public boolean updateStatus = true;
+
+		/**
+		 * Instructs the server to compute a checksum for the replica.
+		 * 
+		 * @since 0.1.0
+		 */
 		public boolean computeChecksum;
-		public boolean sendNotifications;
+
+		/**
+		 * Instructs the server to trigger file-modified notifications when necessary.
+		 * <p>
+		 * This option controls whether policy is fired on a close operation.
+		 * 
+		 * @since 0.1.0
+		 */
+		public boolean sendNotifications = true;
+
+		/**
+		 * This member is for advanced use.
+		 * 
+		 * @since 0.1.0
+		 */
 		public boolean preserveReplicaStateTable;
+
 	}
 
 	/**
+	 * Seek operation options.
 	 * 
+	 * @since 0.1.0
 	 */
 	public static enum SeekDirection {
 		BEGIN, CURRENT, END
 	}
 
 	/**
+	 * Initializes a new stream.
 	 * 
-	 * @param comm
+	 * @since 0.1.0
 	 */
 	public IRODSDataObjectStream() {
 	}
 
 	/**
+	 * Opens a data object.
+	 * <p>
+	 * Depending on the {@code openMode}, nonexistent data objects may be created.
 	 * 
-	 * @param logicalPath
-	 * @param openMode
+	 * @param logicalPath The absolute logical path to a data object.
+	 * @param openMode    The open flags used to tell the server how to open the
+	 *                    data object.
+	 * 
 	 * @throws IOException
 	 * @throws IRODSException
+	 * 
+	 * @since 0.1.0
 	 */
 	public void open(RcComm comm, String logicalPath, int openMode) throws IOException, IRODSException {
 		Optional<Long> replicaNumber = Optional.empty();
@@ -71,12 +119,19 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	}
 
 	/**
+	 * Opens a specific replica.
+	 * <p>
+	 * This function does NOT create new replicas.
 	 * 
-	 * @param logicalPath
-	 * @param replicaNumber
-	 * @param openMode
+	 * @param logicalPath   The absolute logical path to a data object.
+	 * @param replicaNumber The replica number identifying the replica.
+	 * @param openMode      The open flags used to tell the server how to open the
+	 *                      data object.
+	 * 
 	 * @throws IRODSException
 	 * @throws IOException
+	 * 
+	 * @since 0.1.0
 	 */
 	public void open(RcComm comm, String logicalPath, long replicaNumber, int openMode)
 			throws IOException, IRODSException {
@@ -86,12 +141,19 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	}
 
 	/**
+	 * Opens a specific replica.
+	 * <p>
+	 * Depending on the {@code openMode}, nonexistent data objects may be created.
 	 * 
-	 * @param logicalPath
-	 * @param rootResource
-	 * @param openMode
+	 * @param logicalPath  The absolute logical path to a data object.
+	 * @param rootResource The root resource containing the target replica.
+	 * @param openMode     The open flags used to tell the server how to open the
+	 *                     data object.
+	 * 
 	 * @throws IRODSException
 	 * @throws IOException
+	 * 
+	 * @since 0.1.0
 	 */
 	public void open(RcComm comm, String logicalPath, String rootResource, int openMode)
 			throws IOException, IRODSException {
@@ -101,13 +163,23 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	}
 
 	/**
+	 * Opens a specific replica.
+	 * <p>
+	 * This constructor is designed for cases involving parallel transfer. The
+	 * replica of interest is assumed to have been opened prior to this call.
+	 * <p>
+	 * This function does NOT create new replicas.
 	 * 
-	 * @param replicaToken
-	 * @param logicalPath
-	 * @param replicaNumber
-	 * @param openMode
+	 * @param replicaToken  The token associated with the primary replica.
+	 * @param logicalPath   The absolute logical path to a data object.
+	 * @param replicaNumber The replica number identifying the replica.
+	 * @param openMode      The open flags used to tell the server how to open the
+	 *                      data object.
+	 * 
 	 * @throws IRODSException
 	 * @throws IOException
+	 * 
+	 * @since 0.1.0
 	 */
 	public void open(RcComm comm, String replicaToken, String logicalPath, long replicaNumber, int openMode)
 			throws IOException, IRODSException {
@@ -115,34 +187,21 @@ public class IRODSDataObjectStream implements AutoCloseable {
 		openImpl(comm, logicalPath, openMode, Optional.of(replicaNumber), rootResource, Optional.of(replicaToken));
 	}
 
-	// TODO Consider removing this constructor. The root resource could be a random resource. A resource hierarchy would be better.
-//	/**
-//	 * 
-//	 * @param replicaToken
-//	 * @param logicalPath
-//	 * @param rootResource
-//	 * @param openMode
-//	 * @throws IRODSException
-//	 * @throws IOException
-//	 */
-//	public void open(RcComm comm, String replicaToken, String logicalPath, String rootResource, int openMode)
-//			throws IOException, IRODSException {
-//		Optional<Long> replicaNumber = Optional.empty();
-//		openImpl(comm, logicalPath, openMode, replicaNumber, Optional.of(rootResource), Optional.of(replicaToken));
-//	}
-
-	/**
-	 * 
-	 */
 	@Override
 	public void close() throws Exception {
 		close(null);
 	}
 
 	/**
+	 * Closes an open replica with additional instructions.
+	 * <p>
+	 * This form of close is designed for cases involving parallel transfer.
 	 * 
-	 * @param onCloseSuccess
+	 * @param onCloseSuccess Instructions for the server to carry out.
+	 * 
 	 * @throws IOException
+	 * 
+	 * @since 0.1.0
 	 */
 	public void close(OnCloseSuccess onCloseSuccess) throws IOException {
 		if (-1 == fd) {
@@ -171,12 +230,17 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	}
 
 	/**
+	 * Changes the position of the read/write position.
 	 * 
-	 * @param offset
-	 * @param direction
-	 * @return
+	 * @param offset    The number of bytes to move by.
+	 * @param direction Describes how the offset is to be interpreted.
+	 * 
+	 * @return The new position of the read/write pointer.
+	 * 
 	 * @throws IOException
 	 * @throws IRODSException
+	 * 
+	 * @since 0.1.0
 	 */
 	public long seek(int offset, SeekDirection direction) throws IOException, IRODSException {
 		throwIfInvalidL1Descriptor(fd);
@@ -210,12 +274,17 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	}
 
 	/**
+	 * Reads bytes from a data object.
 	 * 
-	 * @param buffer
-	 * @param count
-	 * @return
+	 * @param buffer The byte buffer to fill.
+	 * @param count  The size of the byte buffer.
+	 * 
+	 * @return The number of bytes read.
+	 * 
 	 * @throws IOException
 	 * @throws IRODSException
+	 * 
+	 * @since 0.1.0
 	 */
 	public int read(ByteArrayReference buffer, int count) throws IOException, IRODSException {
 		throwIfInvalidL1Descriptor(fd);
@@ -234,12 +303,17 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	}
 
 	/**
+	 * Writes bytes to a data object.
 	 * 
-	 * @param buffer
-	 * @param count
-	 * @return
+	 * @param buffer The byte buffer which will be written to the data object.
+	 * @param count  The number of bytes to write.
+	 * 
+	 * @return The number of bytes written.
+	 * 
 	 * @throws IOException
 	 * @throws IRODSException
+	 * 
+	 * @since 0.1.0
 	 */
 	public int write(byte[] buffer, int count) throws IOException, IRODSException {
 		throwIfInvalidL1Descriptor(fd);
@@ -260,16 +334,21 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	}
 
 	/**
+	 * Returns whether the stream is open.
 	 * 
-	 * @return
+	 * @since 0.1.0
 	 */
 	public boolean isOpen() {
 		return fd >= 3;
 	}
 
 	/**
+	 * Returns the native handle of the stream.
+	 * <p>
+	 * The value returned will be an L1 descriptor. This is equivalent to a file
+	 * descriptor in POSIX.
 	 * 
-	 * @return
+	 * @since 0.1.0
 	 */
 	public int getNativeHandle() {
 		throwIfInvalidL1Descriptor(fd);
@@ -277,8 +356,10 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	}
 
 	/**
+	 * Returns the replica number which identifies the open replica of the data
+	 * object.
 	 * 
-	 * @return
+	 * @since 0.1.0
 	 */
 	public long getReplicaNumber() {
 		throwIfInvalidL1Descriptor(fd);
@@ -286,8 +367,9 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	}
 
 	/**
+	 * Returns the replica access token associated with the open replica.
 	 * 
-	 * @return
+	 * @since 0.1.0
 	 */
 	public String getReplicaToken() {
 		throwIfInvalidL1Descriptor(fd);
