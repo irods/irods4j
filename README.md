@@ -1,8 +1,8 @@
 # irods4j
 
-**IMPORTANT: This project is not stable yet and may experience changes.**
+**IMPORTANT: This project is not stable yet and may experience changes. Use of this library is encouraged.**
 
-A Java client library designed for iRODS 4.3.2+.
+A Java 17 client library designed for iRODS 4.3.2+.
 
 This library provides a low-level API which exposes data types and functions seen in the iRODS C API. A high-level API is provided to ease use as well.
 
