@@ -107,8 +107,9 @@ class TestStreamOperations {
 		readInput.len = 8192;
 
 		var readBuffer = new ByteArrayReference();
+		readBuffer.data = new byte[readInput.len];
 		var bytesRead = IRODSApi.rcDataObjRead(comm, readInput, readBuffer);
-		assertTrue(bytesRead >= 3);
+		assertTrue(bytesRead > 0);
 		assertTrue(Arrays.equals(Arrays.copyOf(readBuffer.data, bytesRead), writeBuffer));
 
 		// Close the replica.

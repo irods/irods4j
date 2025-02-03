@@ -45,6 +45,8 @@ See the [high-level unit tests](src/test/java/org/irods/irods4j/high_level) for 
 ### I/O APIs
 
 - IRODSDataObjectStream
+- IRODSDataObjectInputStream
+- IRODSDataObjectOutputStream
 
 ### Rule Execution APIs
 

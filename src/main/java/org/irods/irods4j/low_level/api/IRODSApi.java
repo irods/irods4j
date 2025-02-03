@@ -192,7 +192,7 @@ public class IRODSApi {
 		out.flush();
 	}
 
-	private static void sendApiRequest(OutputStream out, int apiNumber, Object data, byte[] bytes) throws IOException {
+	private static void sendApiRequest(OutputStream out, int apiNumber, Object data, byte[] bytes, int byteCount) throws IOException {
 		var msgbody = XmlUtil.toXmlString(data);
 
 		// Create the header describing the message.
@@ -200,12 +200,12 @@ public class IRODSApi {
 		mh.type = MsgHeader_PI.MsgType.RODS_API_REQ;
 		mh.intInfo = apiNumber;
 		mh.msgLen = msgbody.length();
-		mh.bsLen = bytes.length;
+		mh.bsLen = byteCount;
 
 		// Send request.
 		Network.write(out, mh);
 		Network.writeBytes(out, msgbody.getBytes(StandardCharsets.UTF_8));
-		Network.writeBytes(out, bytes);
+		Network.writeBytes(out, bytes, byteCount);
 		out.flush();
 	}
 
@@ -222,7 +222,7 @@ public class IRODSApi {
 		}
 
 		if (mh.bsLen > 0 && null != bsBuffer) {
-			bsBuffer.data = Network.readBytes(comm.sin, mh.bsLen);
+			Network.readBytes(comm.sin, bsBuffer.data, mh.bsLen);
 		}
 
 		return mh.intInfo;
@@ -673,7 +673,7 @@ public class IRODSApi {
 	}
 
 	public static int rcDataObjWrite(RcComm comm, OpenedDataObjInp_PI input, byte[] buffer) throws IOException {
-		sendApiRequest(comm.sout, 676, input, buffer);
+		sendApiRequest(comm.sout, 676, input, buffer, input.len);
 		return receiveServerResponse(comm, null, null, null);
 	}
 

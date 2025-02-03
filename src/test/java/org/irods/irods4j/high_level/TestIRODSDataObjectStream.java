@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
@@ -19,15 +20,17 @@ import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.connection.IRODSConnectionPool;
 import org.irods.irods4j.high_level.connection.QualifiedUsername;
+import org.irods.irods4j.high_level.io.IRODSDataObjectInputStream;
+import org.irods.irods4j.high_level.io.IRODSDataObjectOutputStream;
 import org.irods.irods4j.high_level.io.IRODSDataObjectStream;
 import org.irods.irods4j.high_level.io.IRODSDataObjectStream.OnCloseSuccess;
 import org.irods.irods4j.high_level.io.IRODSDataObjectStream.SeekDirection;
 import org.irods.irods4j.high_level.vfs.IRODSFilesystem;
 import org.irods.irods4j.high_level.vfs.IRODSFilesystem.RemoveOptions;
 import org.irods.irods4j.low_level.api.IRODSApi;
-import org.irods.irods4j.low_level.api.IRODSException;
 import org.irods.irods4j.low_level.api.IRODSApi.ByteArrayReference;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
+import org.irods.irods4j.low_level.api.IRODSException;
 import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjInp_PI.OpenFlags;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -84,6 +87,73 @@ class TestIRODSDataObjectStream {
 
 		in.close();
 		assertFalse(in.isOpen());
+	}
+
+	@Test
+	void testReadingAndWritingUsingInputOutputStreams() throws IOException, IRODSException {
+		var logicalPath = Paths.get("/", zone, "home", username, "testInputOutputStreamImplementation").toString();
+
+		try {
+			var truncate = true;
+			var append = false;
+			var data = """
+					This was written using an IRODSDataObjectOutputStream.
+					The data will be written on close due to the internal buffer not being filled.
+					""".getBytes(StandardCharsets.UTF_8);
+
+			// Create a new data object and write some data to it.
+			try (var out = new IRODSDataObjectOutputStream(comm, logicalPath, truncate, append)) {
+				out.write(data);
+				assertTrue(out.isOpen());
+			}
+
+			// Read the data from the newly created data object.
+			try (var in = new IRODSDataObjectInputStream(comm, logicalPath)) {
+				assertTrue(in.isOpen());
+				var buffer = new byte[data.length];
+				in.read(buffer);
+				assertArrayEquals(data, buffer);
+			}
+		} finally {
+			IRODSFilesystem.remove(comm, logicalPath, RemoveOptions.NO_TRASH);
+		}
+	}
+
+	@Test
+	void testReadingAndWritingUsingInputOutputStreamsAndVerySmallInternalBuffer() throws IOException, IRODSException {
+		var logicalPath = Paths.get("/", zone, "home", username,
+				"testReadingAndWritingUsingInputOutputStreamsAndVerySmallInternalBuffer").toString();
+
+		try {
+			// The buffer size used by the input/output streams. The size is intentionally
+			// small to trigger more network requests.
+			var internalBufferSize = 20;
+
+			var truncate = true;
+			var append = false;
+			var data = """
+					This was written using an IRODSDataObjectOutputStream.
+					The data will be written on close due to the internal buffer not being filled.
+					""".getBytes(StandardCharsets.UTF_8);
+
+			// Create a new data object and write some data to it.
+			try (var out = new IRODSDataObjectOutputStream(internalBufferSize)) {
+				out.open(comm, logicalPath, truncate, append);
+				assertTrue(out.isOpen());
+				out.write(data);
+			}
+
+			// Read the data from the newly created data object.
+			try (var in = new IRODSDataObjectInputStream(internalBufferSize)) {
+				in.open(comm, logicalPath);
+				assertTrue(in.isOpen());
+				var buffer = new byte[data.length];
+				in.read(buffer);
+				assertArrayEquals(data, buffer);
+			}
+		} finally {
+			IRODSFilesystem.remove(comm, logicalPath, RemoveOptions.NO_TRASH);
+		}
 	}
 
 	@Test

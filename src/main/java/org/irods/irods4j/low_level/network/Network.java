@@ -77,8 +77,16 @@ public class Network {
 		return bytes;
 	}
 
+	public static void readBytes(InputStream in, byte[] buffer, int size) throws IOException {
+		in.readNBytes(buffer, 0, size);
+	}
+
 	public static void writeBytes(OutputStream out, byte[] bytes) throws IOException {
 		out.write(bytes);
+	}
+
+	public static void writeBytes(OutputStream out, byte[] bytes, int count) throws IOException {
+		out.write(bytes, 0, count);
 	}
 
 }

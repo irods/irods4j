@@ -28,7 +28,7 @@ public class IRODSDataObjectStream implements AutoCloseable {
 
 	private RcComm comm;
 	private int fd = -1;
-	private int replicaNumber = -1;
+	private long replicaNumber = -1;
 	private String replicaToken;
 
 	/**
@@ -64,7 +64,7 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	 * @throws IRODSException
 	 */
 	public void open(RcComm comm, String logicalPath, int openMode) throws IOException, IRODSException {
-		Optional<Integer> replicaNumber = Optional.empty();
+		Optional<Long> replicaNumber = Optional.empty();
 		Optional<String> rootResource = Optional.empty();
 		Optional<String> replicaToken = Optional.empty();
 		openImpl(comm, logicalPath, openMode, replicaNumber, rootResource, replicaToken);
@@ -78,7 +78,7 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	 * @throws IRODSException
 	 * @throws IOException
 	 */
-	public void open(RcComm comm, String logicalPath, int replicaNumber, int openMode)
+	public void open(RcComm comm, String logicalPath, long replicaNumber, int openMode)
 			throws IOException, IRODSException {
 		Optional<String> rootResource = Optional.empty();
 		Optional<String> replicaToken = Optional.empty();
@@ -95,7 +95,7 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	 */
 	public void open(RcComm comm, String logicalPath, String rootResource, int openMode)
 			throws IOException, IRODSException {
-		Optional<Integer> replicaNumber = Optional.empty();
+		Optional<Long> replicaNumber = Optional.empty();
 		Optional<String> replicaToken = Optional.empty();
 		openImpl(comm, logicalPath, openMode, replicaNumber, Optional.of(rootResource), replicaToken);
 	}
@@ -109,26 +109,27 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	 * @throws IRODSException
 	 * @throws IOException
 	 */
-	public void open(RcComm comm, String replicaToken, String logicalPath, int replicaNumber, int openMode)
+	public void open(RcComm comm, String replicaToken, String logicalPath, long replicaNumber, int openMode)
 			throws IOException, IRODSException {
 		Optional<String> rootResource = Optional.empty();
 		openImpl(comm, logicalPath, openMode, Optional.of(replicaNumber), rootResource, Optional.of(replicaToken));
 	}
 
-	/**
-	 * 
-	 * @param replicaToken
-	 * @param logicalPath
-	 * @param rootResource
-	 * @param openMode
-	 * @throws IRODSException
-	 * @throws IOException
-	 */
-	public void open(RcComm comm, String replicaToken, String logicalPath, String rootResource, int openMode)
-			throws IOException, IRODSException {
-		Optional<Integer> replicaNumber = Optional.empty();
-		openImpl(comm, logicalPath, openMode, replicaNumber, Optional.of(rootResource), Optional.of(replicaToken));
-	}
+	// TODO Consider removing this constructor. The root resource could be a random resource. A resource hierarchy would be better.
+//	/**
+//	 * 
+//	 * @param replicaToken
+//	 * @param logicalPath
+//	 * @param rootResource
+//	 * @param openMode
+//	 * @throws IRODSException
+//	 * @throws IOException
+//	 */
+//	public void open(RcComm comm, String replicaToken, String logicalPath, String rootResource, int openMode)
+//			throws IOException, IRODSException {
+//		Optional<Long> replicaNumber = Optional.empty();
+//		openImpl(comm, logicalPath, openMode, replicaNumber, Optional.of(rootResource), Optional.of(replicaToken));
+//	}
 
 	/**
 	 * 
@@ -279,7 +280,7 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	 * 
 	 * @return
 	 */
-	public int getReplicaNumber() {
+	public long getReplicaNumber() {
 		throwIfInvalidL1Descriptor(fd);
 		return replicaNumber;
 	}
@@ -293,7 +294,7 @@ public class IRODSDataObjectStream implements AutoCloseable {
 		return replicaToken;
 	}
 
-	private void openImpl(RcComm comm, String logicalPath, int openMode, Optional<Integer> replicaNumber,
+	private void openImpl(RcComm comm, String logicalPath, int openMode, Optional<Long> replicaNumber,
 			Optional<String> rootResource, Optional<String> replicaToken) throws IOException, IRODSException {
 		if (null == logicalPath || logicalPath.isEmpty()) {
 			throw new IllegalArgumentException("Logical path is null or empty");
@@ -353,7 +354,7 @@ public class IRODSDataObjectStream implements AutoCloseable {
 		var doi = l1descInfo.get("data_object_info");
 
 		if (-1 == this.replicaNumber) {
-			this.replicaNumber = doi.get("replica_number").asInt();
+			this.replicaNumber = doi.get("replica_number").asLong();
 		}
 
 		if (null == this.replicaToken) {
