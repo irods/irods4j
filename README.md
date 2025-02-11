@@ -1,6 +1,7 @@
 # irods4j
 
-**IMPORTANT: This project is not stable yet and may experience changes. Use of this library is encouraged.**
+> [!IMPORTANT]
+> This project is not stable yet and may experience changes. Use of this library is encouraged.
 
 A Java 17 client library designed for iRODS 4.3.2+.
 
@@ -77,7 +78,8 @@ See the [high-level unit tests](src/test/java/org/irods/irods4j/high_level) for 
 
 ## Low-Level APIs
 
-**IMPORTANT: Not all API operations are supported by the high-level APIs.**
+> [!IMPORTANT]
+> Not all API operations are supported by the high-level APIs.
 
 For those users needing more control, see [IRODSApi.java](src/main/java/org/irods/irods4j/low_level/api/IRODSApi.java) for the available low-level APIs. The low-level APIs provided by this library mirror the design of the C API.
 
