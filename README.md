@@ -29,6 +29,11 @@ To use it, add the following to your pom.xml file.
 </dependency>
 ```
 
+> [!NOTE]
+> A Java 17 compatible implementation of the library is also available.
+>
+> See the [main branch](https://github.com/irods/irods4j) of this repository for the maven dependency coordinates.
+
 ## High-Level APIs
 
 See the [high-level unit tests](src/test/java/org/irods/irods4j/high_level) for usage examples.
