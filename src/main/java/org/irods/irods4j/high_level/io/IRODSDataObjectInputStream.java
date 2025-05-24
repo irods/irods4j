@@ -216,6 +216,13 @@ public class IRODSDataObjectInputStream extends InputStream {
 	public int read() throws IOException {
 		// If we've read all the contents of the buffer, fill it with new data.
 		if (bytesInBuffer == position) {
+			// If the last read operation did not fill the buffer, then we know
+			// there's no need to cross the network again. We can assume all bytes
+			// have been read from the replica.
+			if (bytesInBuffer < buffer.length) {
+				return -1;
+			}
+
 			try {
 				var bytesRead = in.read(buffer, buffer.length);
 				if (0 == bytesRead) {
