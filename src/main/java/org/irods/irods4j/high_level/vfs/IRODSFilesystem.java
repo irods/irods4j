@@ -1291,6 +1291,7 @@ public class IRODSFilesystem {
 			access.append("read_metadata");
 			break;
 		case READ_OBJECT:
+			// TODO(#78): Change to "read_object" once we know all servers are at least running iRODS 4.3.0.
 			access.append("read");
 			break;
 		case CREATE_METADATA:
@@ -1306,7 +1307,8 @@ public class IRODSFilesystem {
 			access.append("create_object");
 			break;
 		case MODIFY_OBJECT:
-			access.append("modify_object");
+			// TODO(#78): Change to "modify_object" once we know all servers are at least running iRODS 4.3.0.
+			access.append("write");
 			break;
 		case DELETE_OBJECT:
 			access.append("delete_object");
