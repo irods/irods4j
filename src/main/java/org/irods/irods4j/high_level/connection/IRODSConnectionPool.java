@@ -15,6 +15,7 @@ import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.irods.irods4j.common.Versioning;
 import org.irods.irods4j.high_level.catalog.IRODSQuery;
 import org.irods.irods4j.low_level.api.IRODSException;
 import org.irods.irods4j.low_level.api.IRODSApi.ConnectionOptions;
@@ -463,9 +464,10 @@ public class IRODSConnectionPool implements AutoCloseable {
 		// This will be used to track when a connection should be refreshed. This helps
 		// with long-running agents.
 		RcComm comm = pool.get(0).conn.getRcComm();
-		List<String> latestRescMtimeRow = IRODSQuery.executeGenQuery2(comm, clientUser.getZone(),
-				"select no distinct RESC_MODIFY_TIME, RESC_MODIFY_TIME_MILLIS order by RESC_MODIFY_TIME desc, RESC_MODIFY_TIME_MILLIS desc limit 1")
-				.get(0);
+		String queryString = Versioning.compareVersions(comm.relVersion.substring(4), "4.3.4") > 0
+				? "select RESC_MODIFY_TIME, RESC_MODIFY_TIME_MILLIS order by RESC_MODIFY_TIME desc, RESC_MODIFY_TIME_MILLIS desc limit 1"
+				: "select no distinct RESC_MODIFY_TIME, RESC_MODIFY_TIME_MILLIS order by RESC_MODIFY_TIME desc, RESC_MODIFY_TIME_MILLIS desc limit 1";
+		List<String> latestRescMtimeRow = IRODSQuery.executeGenQuery2(comm, clientUser.getZone(), queryString).get(0);
 		String latestRescMtime = String.format("%s.%s", latestRescMtimeRow.get(0), latestRescMtimeRow.get(1));
 		List<String> rescCountRow = IRODSQuery.executeGenQuery2(comm, clientUser.getZone(), "select count(RESC_ID) limit 1")
 				.get(0);
@@ -523,9 +525,10 @@ public class IRODSConnectionPool implements AutoCloseable {
 				}
 
 				if (rescCount > 0) {
-					List<String> latestRescMtimeRow = IRODSQuery.executeGenQuery2(comm, zone,
-							"select no distinct RESC_MODIFY_TIME, RESC_MODIFY_TIME_MILLIS order by RESC_MODIFY_TIME desc, RESC_MODIFY_TIME_MILLIS desc limit 1")
-							.get(0);
+					String queryString = Versioning.compareVersions(comm.relVersion.substring(4), "4.3.4") > 0
+							? "select RESC_MODIFY_TIME, RESC_MODIFY_TIME_MILLIS order by RESC_MODIFY_TIME desc, RESC_MODIFY_TIME_MILLIS desc limit 1"
+							: "select no distinct RESC_MODIFY_TIME, RESC_MODIFY_TIME_MILLIS order by RESC_MODIFY_TIME desc, RESC_MODIFY_TIME_MILLIS desc limit 1";
+					List<String> latestRescMtimeRow = IRODSQuery.executeGenQuery2(comm, zone, queryString).get(0);
 					String latestRescMtime = String.format("%s.%s", latestRescMtimeRow.get(0), latestRescMtimeRow.get(1));
 					if (latestRescMtime.equals(ctx.latestRescMTime)) {
 						inSync = false;
