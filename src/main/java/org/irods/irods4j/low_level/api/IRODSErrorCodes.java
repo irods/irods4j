@@ -174,6 +174,9 @@ public class IRODSErrorCodes {
 	public static final int CONFIGURATION_ERROR = -180000;
 	public static final int SHUTDOWN_SEQUENCE_INITIATED = -181000;
 	public static final int INTERRUPT_DETECTED = -182000;
+	public static final int INVALID_GENQUERY_AGGREGATE_FUNCTION = -183000;
+	public static final int INVALID_INPUT_ARGUMENT_NULL_POINTER = -184000;
+	public static final int CONNECTION_REFUSED = -185000;
 
 	public static final int USER_AUTH_SCHEME_ERR = -300000;
 	public static final int USER_AUTH_STRING_EMPTY = -301000;
@@ -658,6 +661,9 @@ public class IRODSErrorCodes {
 	public static final int RULE_ENGINE_ERROR = -1828000;
 	public static final int REBALANCE_ALREADY_ACTIVE_ON_RESOURCE = -1829000;
 	public static final int USER_NOT_IN_GROUP = -1830000;
+	public static final int DIGEST_INIT_FAILED = -1831000;
+	public static final int DIGEST_UPDATE_FAILED = -1832000;
+	public static final int DIGEST_FINAL_FAILED = -1833000;
 
 	public static final int NETCDF_OPEN_ERR = -2000000;
 	public static final int NETCDF_CREATE_ERR = -2001000;
@@ -708,6 +714,7 @@ public class IRODSErrorCodes {
 
 	public static final int DEPRECATED_PARAMETER = -3000000;
 	public static final int DEPRECATED_API = -3001000;
+	public static final int DEPRECATED_AUTHENTICATION_PLUGIN = -3002000;
 
 	public static final int XML_PARSING_ERR = -2300000;
 	public static final int OUT_OF_URL_PATH = -2301000;
