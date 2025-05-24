@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.Reference;
+import org.irods.irods4j.common.Versioning;
 import org.irods.irods4j.high_level.administration.IRODSZones.ZoneType;
 import org.irods.irods4j.high_level.catalog.IRODSQuery;
 import org.irods.irods4j.high_level.catalog.IRODSQuery.GenQuery1QueryArgs;
@@ -482,10 +483,19 @@ public class IRODSUsers {
 
 		var input = new GeneralAdminInp_PI();
 		input.arg0 = "add";
-		input.arg1 = "user";
 		input.arg2 = group.name;
-		input.arg3 = "rodsgroup";
 		input.arg4 = zone;
+
+		// For 4.3.4 and later, the API should add a "group" without providing a user type.
+		// Any earlier version only knows how to add a "user" of type "rodsgroup" (which is
+		// a group).
+		if (Versioning.compareVersions(comm.relVersion.substring(4), "4.3.3") > 0) {
+			input.arg1 = "group";
+		}
+		else {
+			input.arg1 = "user";
+			input.arg3 = "rodsgroup";
+		}
 
 		var ec = IRODSApi.rcGeneralAdmin(comm, input);
 		if (ec < 0) {
@@ -764,9 +774,7 @@ public class IRODSUsers {
 		var typeRef = new TypeReference<List<List<String>>>() {
 		};
 		var rows = JsonUtil.fromJsonString(output.value, typeRef);
-		if (!rows.isEmpty()) {
-			rows.forEach(row -> groups.add(new Group(row.get(0))));
-		}
+		rows.forEach(row -> groups.add(new Group(row.get(0))));
 
 		return groups;
 	}
