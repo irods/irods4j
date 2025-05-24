@@ -138,7 +138,7 @@ public class IRODSErrorCodes {
 	public static final int SYS_MSSO_CLOSE_ERR = -136000;
 	public static final int SYS_RULE_NOT_FOUND = -144000;
 	public static final int SYS_NOT_IMPLEMENTED = -146000;
-	public static final int SYS_SIGNED_SID_NOT_MATCHED = -147000;
+	public static final int ZONE_KEY_SIGNATURE_MISMATCH = -147000;
 	public static final int SYS_HASH_IMMUTABLE = -148000;
 	public static final int SYS_UNINITIALIZED = -149000;
 	public static final int SYS_NEGATIVE_SIZE = -150000;
