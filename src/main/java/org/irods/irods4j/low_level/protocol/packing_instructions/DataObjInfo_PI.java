@@ -37,5 +37,6 @@ public class DataObjInfo_PI {
 	public String in_pdmo;
 	public int next;
 	public long rescId; // This is a double in the C impl.
+	public String dataAccessTime;
 
 }
