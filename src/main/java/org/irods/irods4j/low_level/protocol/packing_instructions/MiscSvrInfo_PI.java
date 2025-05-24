@@ -7,5 +7,6 @@ public class MiscSvrInfo_PI {
 	public String relVersion;
 	public String apiVersion;
 	public String rodsZone;
+	public BinBytesBuf_PI BinBytesBuf_PI;
 
 }
