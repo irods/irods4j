@@ -261,11 +261,10 @@ class TestIRODSDataObjectStream {
 			try (IRODSDataObjectStream in = new IRODSDataObjectStream(); IRODSConnectionPool.PoolConnection conn1 = connPool.getConnection()) {
 				in.open(conn1.getRcComm(), logicalPath, OpenFlags.O_RDONLY);
 
-				ByteArrayReference byteArrayRef = new ByteArrayReference();
-				byteArrayRef.data = new byte[300];
 				// Read the data.
-				int bytesRead = in.read(byteArrayRef, byteArrayRef.data.length);
-				assertEquals(bytesRead, byteArrayRef.data.length);
+				byte[] buffer = new byte[300];
+				int bytesRead = in.read(buffer, buffer.length);
+				assertEquals(bytesRead, buffer.length);
 
 				// Create a buffer containing the expected contents.
 				byte[] expected = new byte[300];
@@ -274,7 +273,7 @@ class TestIRODSDataObjectStream {
 				Arrays.fill(expected, 200, 300, (byte) 'C');
 
 				// Show the buffers contain identical data.
-				assertArrayEquals(byteArrayRef.data, expected);
+				assertArrayEquals(buffer, expected);
 			}
 		} finally {
 			IRODSFilesystem.remove(comm, logicalPath, RemoveOptions.NO_TRASH);

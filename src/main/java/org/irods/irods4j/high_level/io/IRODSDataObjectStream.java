@@ -288,15 +288,18 @@ public class IRODSDataObjectStream implements AutoCloseable {
 	 * 
 	 * @since 0.1.0
 	 */
-	public int read(ByteArrayReference buffer, int count) throws IOException, IRODSException {
+	public int read(byte[] buffer, int count) throws IOException, IRODSException {
 		throwIfInvalidL1Descriptor(fd);
-		throwIfInvalidBufferSize(buffer.data.length, count);
+		throwIfInvalidBufferSize(buffer.length, count);
 
 		OpenedDataObjInp_PI input = new OpenedDataObjInp_PI();
 		input.l1descInx = fd;
 		input.len = count;
 
-		int bytesRead = IRODSApi.rcDataObjRead(comm, input, buffer);
+		ByteArrayReference readBuffer = new ByteArrayReference();
+		readBuffer.data = buffer;
+
+		int bytesRead = IRODSApi.rcDataObjRead(comm, input, readBuffer);
 		if (bytesRead < 0) {
 			throw new IRODSException(bytesRead, "rcDataObjRead error");
 		}
