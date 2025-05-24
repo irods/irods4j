@@ -229,7 +229,10 @@ public class IRODSDataObjectInputStream extends InputStream {
 			}
 		}
 
-		return buffer[position++];
+		// "& 0xFF" converts the return value to an unsigned byte. This addition was
+		// recommended by the intellij IDEA IDE. See the following for more details:
+ 		// https://www.jetbrains.com/help/inspectopedia/SuspiciousReturnByteInputStream.html
+		return buffer[position++] & 0xFF;
 	}
 
 	@Override
