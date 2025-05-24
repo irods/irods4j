@@ -22,7 +22,6 @@ public class IRODSDataObjectInputStream extends InputStream {
 	private static final Logger log = LogManager.getLogger();
 
 	private IRODSDataObjectStream in = new IRODSDataObjectStream();
-	private ByteArrayReference byteArrRef = new ByteArrayReference();
 	private byte[] buffer;
 	private int bytesInBuffer;
 	private int position;
@@ -35,7 +34,6 @@ public class IRODSDataObjectInputStream extends InputStream {
 	public IRODSDataObjectInputStream() {
 		buffer = new byte[65536];
 		bytesInBuffer = buffer.length;
-		byteArrRef.data = buffer;
 	}
 
 	/**
@@ -49,7 +47,6 @@ public class IRODSDataObjectInputStream extends InputStream {
 		Preconditions.greaterThanOrEqualToValue(bufferSize, 1, "Buffer size is less than 1");
 		buffer = new byte[bufferSize];
 		this.bytesInBuffer = bufferSize;
-		byteArrRef.data = buffer;
 	}
 
 	/**
@@ -220,7 +217,7 @@ public class IRODSDataObjectInputStream extends InputStream {
 		// If we've read all the contents of the buffer, fill it with new data.
 		if (bytesInBuffer == position) {
 			try {
-				var bytesRead = in.read(byteArrRef, buffer.length);
+				var bytesRead = in.read(buffer, buffer.length);
 				if (0 == bytesRead) {
 					return -1;
 				}
@@ -251,7 +248,6 @@ public class IRODSDataObjectInputStream extends InputStream {
 
 		buffer = new byte[65536];
 		bytesInBuffer = buffer.length;
-		byteArrRef.data = buffer;
 	}
 
 }
