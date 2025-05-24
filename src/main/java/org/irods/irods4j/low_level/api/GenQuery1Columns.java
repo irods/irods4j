@@ -68,6 +68,7 @@ public class GenQuery1Columns {
 	public static final int COL_DATA_MODE = 421;
 	public static final int COL_D_RESC_HIER = 422;
 	public static final int COL_D_RESC_ID = 423;
+	public static final int COL_D_ACCESS_TIME = 424;
 
 	/* R_COLL_MAIN */
 	public static final int COL_COLL_ID = 500;

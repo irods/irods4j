@@ -1,23 +1,22 @@
 package org.irods.irods4j.high_level;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.common.JsonUtil;
+import org.irods.irods4j.common.Versioning;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.administration.IRODSUsers.User;
 import org.irods.irods4j.high_level.catalog.IRODSQuery;
 import org.irods.irods4j.high_level.catalog.IRODSQuery.GenQuery1QueryArgs;
 import org.irods.irods4j.high_level.connection.IRODSConnection;
 import org.irods.irods4j.high_level.connection.QualifiedUsername;
+import org.irods.irods4j.high_level.io.IRODSDataObjectOutputStream;
+import org.irods.irods4j.high_level.vfs.IRODSFilesystem;
 import org.irods.irods4j.low_level.api.GenQuery1Columns;
 import org.irods.irods4j.low_level.api.GenQuery1SortOptions;
 import org.irods.irods4j.low_level.api.IRODSException;
@@ -25,6 +24,9 @@ import org.irods.irods4j.low_level.api.IRODSKeywords;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class TestIRODSQuery {
 
@@ -155,6 +157,81 @@ class TestIRODSQuery {
 		var text = output.toString();
 		log.debug("\n" + text);
 		assertTrue(text.contains("/" + zone + "/"));
+	}
+
+	@Test
+	void testIRODSQuerySupportsRetrievalOfReplicaAccessTimeViaGenQuery1() throws IOException, IRODSException {
+		final var supportsAccessTime = Versioning.compareVersions(conn.getRcComm().relVersion.substring(4), "5.0.0") >= 0;
+		assumeTrue(supportsAccessTime, "Access time for replicas requires iRODS 5 or later");
+
+		var logicalPath = Paths.get("/", zone, "home", username, "atime.txt");
+
+		try {
+			// Create a new data object and write some data to it.
+			var truncate = false;
+			var append = false;
+			try (var out = new IRODSDataObjectOutputStream(conn.getRcComm(), logicalPath.toString(), truncate, append)) {
+				assertTrue(out.isOpen());
+			}
+
+			var input = new GenQuery1QueryArgs();
+
+			// select COLL_NAME, DATA_NAME, DATA_ACCESS_TIME
+			input.addColumnToSelectClause(GenQuery1Columns.COL_COLL_NAME);
+			input.addColumnToSelectClause(GenQuery1Columns.COL_DATA_NAME);
+			input.addColumnToSelectClause(GenQuery1Columns.COL_D_ACCESS_TIME);
+
+			// where COLL_NAME like '/tempZone/home/rods and DATA_NAME = 'atime.txt'
+			var collNameCondStr = String.format("= '%s'", logicalPath.getParent().toString());
+			var dataNameCondStr = String.format("= '%s'", logicalPath.getFileName().toString());
+			input.addConditionToWhereClause(GenQuery1Columns.COL_COLL_NAME, collNameCondStr);
+			input.addConditionToWhereClause(GenQuery1Columns.COL_DATA_NAME, dataNameCondStr);
+
+			// Execute the query in tempZone.
+			input.addApiOption(IRODSKeywords.ZONE, zone);
+
+			var output = new StringBuilder();
+
+			IRODSQuery.executeGenQuery1(conn.getRcComm(), input, row -> {
+				// Each row should contain 3 columns.
+				assertEquals(3, row.size());
+
+				// The length of the access time string should be 11.
+				assertEquals(11, row.get(2).length());
+
+				return false;
+			});
+		} finally {
+			assertDoesNotThrow(() -> IRODSFilesystem.remove(conn.getRcComm(), logicalPath.toString(), IRODSFilesystem.RemoveOptions.NO_TRASH));
+		}
+	}
+
+	@Test
+	void testIRODSQuerySupportsRetrievalOfReplicaAccessTimeViaGenQuery2() throws IOException, IRODSException {
+		final var supportsAccessTime = Versioning.compareVersions(conn.getRcComm().relVersion.substring(4), "5.0.0") >= 0;
+		assumeTrue(supportsAccessTime, "Access time for replicas requires iRODS 5 or later");
+
+		var logicalPath = Paths.get("/", zone, "home", username, "atime.txt");
+
+		try {
+			// Create a new data object and write some data to it.
+			var truncate = false;
+			var append = false;
+			try (var out = new IRODSDataObjectOutputStream(conn.getRcComm(), logicalPath.toString(), truncate, append)) {
+				assertTrue(out.isOpen());
+			}
+
+			var queryString = String.format("select COLL_NAME, DATA_NAME, DATA_ACCESS_TIME where COLL_NAME = '%s' and DATA_NAME = '%s'",
+					logicalPath.getParent().toString(), logicalPath.getFileName().toString());
+			var rows = IRODSQuery.executeGenQuery2(conn.getRcComm(), zone, queryString);
+			assertEquals(1, rows.size());
+
+			var row = rows.get(0);
+			assertEquals(3, row.size());
+			assertEquals(11, row.get(2).length());
+		} finally {
+			assertDoesNotThrow(() -> IRODSFilesystem.remove(conn.getRcComm(), logicalPath.toString(), IRODSFilesystem.RemoveOptions.NO_TRASH));
+		}
 	}
 
 }
