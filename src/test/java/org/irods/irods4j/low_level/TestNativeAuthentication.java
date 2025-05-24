@@ -7,6 +7,8 @@ import java.util.Optional;
 
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
+import org.irods.irods4j.high_level.administration.IRODSUsers;
+import org.irods.irods4j.high_level.administration.IRODSZones;
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.junit.jupiter.api.AfterAll;
@@ -43,11 +45,30 @@ class TestNativeAuthentication {
 
 	@Test
 	void testAuthenticateAsAnonymousUser() {
-		RcComm anonymousComm = assertDoesNotThrow(() -> IRODSApi.rcConnect(host, port, "anonymous", zone, Optional.empty(),
-				Optional.empty(), Optional.empty(), Optional.empty()));
-		assertNotNull(anonymousComm);
-		assertDoesNotThrow(() -> IRODSApi.rcAuthenticateClient(anonymousComm, "native", ""));
-		assertDoesNotThrow(() -> IRODSApi.rcDisconnect(anonymousComm));
+		assertDoesNotThrow(() -> IRODSApi.rcAuthenticateClient(comm, "native", password));
+
+		// Add the anonymous user to the system if not present.
+		IRODSUsers.User anonymousUser = new IRODSUsers.User("anonymous", Optional.of(zone));
+
+		assertDoesNotThrow(() -> {
+			boolean removeAnonymousUser = false;
+			try {
+				if (!IRODSUsers.exists(comm, anonymousUser)) {
+					removeAnonymousUser = true;
+					IRODSUsers.addUser(comm, anonymousUser, IRODSUsers.UserType.RODSUSER, IRODSZones.ZoneType.LOCAL);
+				}
+
+				RcComm anonymousComm = assertDoesNotThrow(() -> IRODSApi.rcConnect(host, port, "anonymous", zone, Optional.empty(),
+						Optional.empty(), Optional.empty(), Optional.empty()));
+				assertNotNull(anonymousComm);
+				assertDoesNotThrow(() -> IRODSApi.rcAuthenticateClient(anonymousComm, "native", ""));
+				assertDoesNotThrow(() -> IRODSApi.rcDisconnect(anonymousComm));
+			} finally {
+				if (removeAnonymousUser) {
+					IRODSUsers.removeUser(comm, anonymousUser);
+				}
+			}
+		});
 	}
 
 }
