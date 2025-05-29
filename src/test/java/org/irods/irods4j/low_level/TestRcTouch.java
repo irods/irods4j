@@ -14,6 +14,7 @@ import org.irods.irods4j.common.Reference;
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjInp_PI;
+import org.irods.irods4j.low_level.protocol.packing_instructions.KeyValPair_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.RodsObjStat_PI;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -62,6 +63,7 @@ class TestRcTouch {
 		// Show the collection's mtime has been changed to the target mtime.
 		DataObjInp_PI statInput = new DataObjInp_PI();
 		statInput.objPath = logicalPath;
+		statInput.KeyValPair_PI = new KeyValPair_PI();
 
 		Reference<RodsObjStat_PI> output = new Reference<RodsObjStat_PI>();
 

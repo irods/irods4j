@@ -592,13 +592,13 @@ public class IRODSQuery {
 		SpecificQueryInp_PI input = new SpecificQueryInp_PI();
 		input.sql = specificQueryName;
 		input.maxRows = GenQuery1Limits.MAX_SQL_ROWS;
+		input.KeyValPair_PI = new KeyValPair_PI();
 
 		zone.ifPresent(value -> {
 			if (null == value || value.isEmpty()) {
 				throw new IllegalArgumentException("Zone is null or empty");
 			}
 
-			input.KeyValPair_PI = new KeyValPair_PI();
 			input.KeyValPair_PI.ssLen = 1;
 			input.KeyValPair_PI.keyWord = new ArrayList<>();
 			input.KeyValPair_PI.svalue = new ArrayList<>();

@@ -58,9 +58,9 @@ public class IRODSMetadata {
 		input.arg3 = attrName;
 		input.arg4 = attrValue;
 		input.arg5 = attrUnits.orElse("");
+		input.KeyValPair_PI = new KeyValPair_PI();
 
 		if (asAdmin) {
-			input.KeyValPair_PI = new KeyValPair_PI();
 			input.KeyValPair_PI.ssLen = 1;
 			input.KeyValPair_PI.keyWord = new ArrayList<>();
 			input.KeyValPair_PI.svalue = new ArrayList<>();
@@ -368,6 +368,7 @@ public class IRODSMetadata {
 		input.arg3 = attrName;
 		input.arg4 = attrValue;
 		input.arg5 = attrUnits.orElse("");
+		input.KeyValPair_PI = new KeyValPair_PI();
 
 		int ec = IRODSApi.rcModAVUMetadata(comm, input);
 		if (ec < 0) {
@@ -457,6 +458,7 @@ public class IRODSMetadata {
 		input.arg3 = attrName;
 		input.arg4 = attrValue;
 		input.arg5 = attrUnits.orElse("");
+		input.KeyValPair_PI = new KeyValPair_PI();
 
 		int ec = IRODSApi.rcModAVUMetadata(comm, input);
 		if (ec < 0) {

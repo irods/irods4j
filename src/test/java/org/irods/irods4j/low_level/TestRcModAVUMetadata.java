@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
+import org.irods.irods4j.low_level.protocol.packing_instructions.KeyValPair_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.ModAVUMetadataInp_PI;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -51,6 +52,7 @@ class TestRcModAVUMetadata {
 		input.arg3 = avuName;
 		input.arg4 = avuValue;
 		input.arg5 = avuUnit;
+		input.KeyValPair_PI = new KeyValPair_PI();
 
 		int ec = IRODSApi.rcModAVUMetadata(comm, input);
 		assertEquals(ec, 0);

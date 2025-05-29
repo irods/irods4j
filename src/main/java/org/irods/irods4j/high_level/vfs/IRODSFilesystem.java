@@ -293,6 +293,7 @@ public class IRODSFilesystem {
 
 		CollInpNew_PI input = new CollInpNew_PI();
 		input.collName = path;
+		input.KeyValPair_PI = new KeyValPair_PI();
 
 		int ec = IRODSApi.rcCollCreate(comm, input);
 		if (ec < 0) {
@@ -914,7 +915,9 @@ public class IRODSFilesystem {
 		DataObjCopyInp_PI input = new DataObjCopyInp_PI();
 		input.DataObjInp_PI = new DataObjInp_PI[] { new DataObjInp_PI(), new DataObjInp_PI() };
 		input.DataObjInp_PI[0].objPath = oldPath;
+		input.DataObjInp_PI[0].KeyValPair_PI = new KeyValPair_PI();
 		input.DataObjInp_PI[1].objPath = newPath;
+		input.DataObjInp_PI[1].KeyValPair_PI = new KeyValPair_PI();
 
 		int ec = IRODSApi.rcDataObjRename(comm, input);
 		if (ec < 0) {
@@ -1207,6 +1210,7 @@ public class IRODSFilesystem {
 	private static StatInfo stat(RcComm comm, String logicalPath) throws IOException, IRODSException {
 		DataObjInp_PI input = new DataObjInp_PI();
 		input.objPath = logicalPath;
+		input.KeyValPair_PI = new KeyValPair_PI();
 
 		Reference<RodsObjStat_PI> output = new Reference<RodsObjStat_PI>();
 		StatInfo statInfo = new StatInfo();
@@ -1367,26 +1371,17 @@ public class IRODSFilesystem {
 		if (isCollection(s)) {
 			CollInpNew_PI input = new CollInpNew_PI();
 			input.collName = path;
+			input.KeyValPair_PI = new KeyValPair_PI();
+			input.KeyValPair_PI.keyWord = new ArrayList<>();
+			input.KeyValPair_PI.svalue = new ArrayList<>();
 
 			if (removeOptions.noTrash) {
-				if (null == input.KeyValPair_PI) {
-					input.KeyValPair_PI = new KeyValPair_PI();
-					input.KeyValPair_PI.keyWord = new ArrayList<>();
-					input.KeyValPair_PI.svalue = new ArrayList<>();
-				}
-
 				++input.KeyValPair_PI.ssLen;
 				input.KeyValPair_PI.keyWord.add(IRODSKeywords.FORCE_FLAG);
 				input.KeyValPair_PI.svalue.add("");
 			}
 
 			if (removeOptions.recursive) {
-				if (null == input.KeyValPair_PI) {
-					input.KeyValPair_PI = new KeyValPair_PI();
-					input.KeyValPair_PI.keyWord = new ArrayList<>();
-					input.KeyValPair_PI.svalue = new ArrayList<>();
-				}
-
 				++input.KeyValPair_PI.ssLen;
 				input.KeyValPair_PI.keyWord.add(IRODSKeywords.RECURSIVE_OPR);
 				input.KeyValPair_PI.svalue.add("");

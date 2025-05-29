@@ -250,6 +250,7 @@ public class IRODSDataObjectStream implements AutoCloseable {
 		OpenedDataObjInp_PI input = new OpenedDataObjInp_PI();
 		input.l1descInx = fd;
 		input.offset = offset;
+		input.KeyValPair_PI = new KeyValPair_PI();
 
 		switch (direction) {
 		case BEGIN:
@@ -295,6 +296,7 @@ public class IRODSDataObjectStream implements AutoCloseable {
 		OpenedDataObjInp_PI input = new OpenedDataObjInp_PI();
 		input.l1descInx = fd;
 		input.len = count;
+		input.KeyValPair_PI = new KeyValPair_PI();
 
 		ByteArrayReference readBuffer = new ByteArrayReference();
 		readBuffer.data = buffer;
