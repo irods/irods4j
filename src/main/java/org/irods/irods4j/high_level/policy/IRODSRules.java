@@ -125,7 +125,6 @@ public class IRODSRules {
 
 		// The rule engine plugin instance to execute against.
 		input.KeyValPair_PI = new KeyValPair_PI();
-		input.KeyValPair_PI.ssLen = 0;
 		args.ruleEnginePluginInstance.ifPresent(instanceName -> {
 			++input.KeyValPair_PI.ssLen;
 			input.KeyValPair_PI.keyWord = new ArrayList<>();

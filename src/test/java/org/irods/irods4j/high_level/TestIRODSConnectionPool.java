@@ -47,11 +47,11 @@ class TestIRODSConnectionPool {
 				try {
 					IRODSApi.rcAuthenticateClient(comm, "native", password);
 
-					// Returning true let's the connection pool know that authentication was
+					// Returning true lets the connection pool know that authentication was
 					// successful.
 					return true;
 				} catch (Exception e) {
-					// Returning false let's the connection pool know that authentication failed.
+					// Returning false lets the connection pool know that authentication failed.
 					// This means the connection pool must not be used.
 					return false;
 				}
@@ -77,11 +77,11 @@ class TestIRODSConnectionPool {
 				try {
 					IRODSApi.rcAuthenticateClient(comm, "native", password);
 
-					// Returning true let's the connection pool know that authentication was
+					// Returning true lets the connection pool know that authentication was
 					// successful.
 					return true;
 				} catch (Exception e) {
-					// Returning false let's the connection pool know that authentication failed.
+					// Returning false lets the connection pool know that authentication failed.
 					// This means the connection pool must not be used.
 					return false;
 				}

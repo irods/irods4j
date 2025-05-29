@@ -202,13 +202,11 @@ public class IRODSFilesystem {
 		srcInput.objPath = from;
 //		srcInput.oprType = 10; // COPY_SRC - see dataObjInpOut.h
 		srcInput.KeyValPair_PI = new KeyValPair_PI();
-		srcInput.KeyValPair_PI.ssLen = 0;
 
 		DataObjInp_PI dstInput = input.DataObjInp_PI[1];
 		dstInput.objPath = to;
 //		dstInput.oprType = 9; // COPY_DEST - see dataObjInpOut.h
 		dstInput.KeyValPair_PI = new KeyValPair_PI();
-		dstInput.KeyValPair_PI.ssLen = 0;
 
 		ObjectStatus s = status(comm, to);
 		if (exists(s)) {
@@ -1226,7 +1224,7 @@ public class IRODSFilesystem {
 			statInfo.mode = output.value.dataMode;
 			statInfo.inheritance = getInheritance(comm, logicalPath, statInfo.type);
 			statInfo.prms = toEntityPermissionsList(comm, logicalPath, statInfo.type);
-		} else if (-310000 /* USER_FILE_DOES_NOT_EXIST */ == statInfo.error) {
+		} else if (IRODSErrorCodes.USER_FILE_DOES_NOT_EXIST == statInfo.error) {
 			statInfo.error = 0;
 			statInfo.type = 0; // UNKNOWN_OBJ_T
 		}
@@ -1355,9 +1353,9 @@ public class IRODSFilesystem {
 			DataObjInp_PI input = new DataObjInp_PI();
 			input.objPath = path;
 			input.oprType = removeOptions.unregister ? 26 /* UNREG_OPR */ : 0;
+			input.KeyValPair_PI = new KeyValPair_PI();
 
 			if (removeOptions.noTrash) {
-				input.KeyValPair_PI = new KeyValPair_PI();
 				input.KeyValPair_PI.ssLen = 1;
 				input.KeyValPair_PI.keyWord = new ArrayList<>();
 				input.KeyValPair_PI.svalue = new ArrayList<>();

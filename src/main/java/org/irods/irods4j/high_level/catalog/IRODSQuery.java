@@ -595,7 +595,7 @@ public class IRODSQuery {
 		input.KeyValPair_PI = new KeyValPair_PI();
 
 		zone.ifPresent(value -> {
-			if (null == value || value.isEmpty()) {
+			if (value.isEmpty()) {
 				throw new IllegalArgumentException("Zone is null or empty");
 			}
 
@@ -649,14 +649,14 @@ public class IRODSQuery {
 				if (IRODSErrorCodes.CAT_NO_ROWS_FOUND == ec) {
 					break;
 				}
-				throw new IRODSException(ec, "rcGenQuery2 error");
+				throw new IRODSException(ec, "rcSpecificQuery error");
 			}
 
 			ArrayList<String> row = new ArrayList<String>();
 			for (int r = 0; r < output.value.rowCnt; ++r) {
 				for (int c = 0; c < output.value.attriCnt; ++c) {
 					// Get an attribute list. Each SqlResult_PI represents a column containing one
-					// piece of of information for each row.
+					// piece of information for each row.
 					SqlResult_PI sqlResult = output.value.SqlResult_PI.get(c);
 					row.add(sqlResult.value.get(r));
 				}
