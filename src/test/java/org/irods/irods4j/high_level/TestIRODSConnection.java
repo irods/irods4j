@@ -22,6 +22,7 @@ import org.irods.irods4j.high_level.connection.IRODSConnection;
 import org.irods.irods4j.high_level.connection.QualifiedUsername;
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjInp_PI;
+import org.irods.irods4j.low_level.protocol.packing_instructions.KeyValPair_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.RodsObjStat_PI;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -114,6 +115,7 @@ class TestIRODSConnection {
 				// having permission to see the target collection.
 				var input = new DataObjInp_PI();
 				input.objPath = Paths.get("/", zone, "home", username).toString();
+				input.KeyValPair_PI = new KeyValPair_PI();
 				var output = new Reference<RodsObjStat_PI>();
 				var ec = IRODSApi.rcObjStat(conn.getRcComm(), input, output);
 				log.debug("rcObjStat ec = {}", ec); // TODO Remove this.
