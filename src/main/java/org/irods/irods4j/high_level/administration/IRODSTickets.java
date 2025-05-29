@@ -371,7 +371,6 @@ public class IRODSTickets {
 		input.arg5 = arg3;
 		input.arg6 = arg4;
 		input.KeyValPair_PI = new KeyValPair_PI();
-		input.KeyValPair_PI.ssLen = 0;
 
 		if (runAsAdmin) {
 			input.KeyValPair_PI.ssLen = 1;

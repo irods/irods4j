@@ -328,7 +328,6 @@ public class IRODSDataObjectStream implements AutoCloseable {
 		input.l1descInx = fd;
 		input.len = count;
 		input.KeyValPair_PI = new KeyValPair_PI();
-		input.KeyValPair_PI.ssLen = 0;
 
 		var bytesWritten = IRODSApi.rcDataObjWrite(comm, input, buffer);
 		if (bytesWritten < 0) {
@@ -393,7 +392,6 @@ public class IRODSDataObjectStream implements AutoCloseable {
 		input.createMode = 0600;
 		input.openFlags = openMode;
 		input.KeyValPair_PI = new KeyValPair_PI();
-		input.KeyValPair_PI.ssLen = 0;
 		input.KeyValPair_PI.keyWord = new ArrayList<>();
 		input.KeyValPair_PI.svalue = new ArrayList<>();
 

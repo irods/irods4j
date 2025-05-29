@@ -12,8 +12,23 @@ import org.irods.irods4j.low_level.protocol.packing_instructions.Genquery2Input_
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+/**
+ * Provides utilities for common miscellaneous operations.
+ *
+ * @since 0.1.0
+ */
 class Common {
 
+	/**
+	 * Retrieves the zone name which the connected server belongs to.
+	 *
+	 * @param comm The connection to the iRODS server.
+	 * @return The zone name which the connected server belongs to.
+	 * @throws IOException
+	 * @throws IRODSException
+	 *
+	 * @since 0.1.0
+	 */
 	static String getLocalZone(RcComm comm) throws IOException, IRODSException {
 		if (null == comm) {
 			throw new IllegalArgumentException("RcComm is null");
