@@ -231,7 +231,7 @@ public class IRODSMetadata {
 			Optional<String> attrUnits) throws IOException, IRODSException {
 		final boolean asAdmin = false;
 		final OneOffMetadataOperation op = OneOffMetadataOperation.ADD;
-		final boolean isCollection = true;
+		final boolean isCollection = false;
 		doOneOffMetadataOperationOnLogicalPath(asAdmin, comm, op, isCollection, logicalPath, attrName, attrValue,
 				attrUnits);
 	}
@@ -254,7 +254,7 @@ public class IRODSMetadata {
 			String attrValue, Optional<String> attrUnits) throws IOException, IRODSException {
 		final boolean asAdmin = true;
 		final OneOffMetadataOperation op = OneOffMetadataOperation.ADD;
-		final boolean isCollection = true;
+		final boolean isCollection = false;
 		doOneOffMetadataOperationOnLogicalPath(asAdmin, comm, op, isCollection, logicalPath, attrName, attrValue,
 				attrUnits);
 	}
