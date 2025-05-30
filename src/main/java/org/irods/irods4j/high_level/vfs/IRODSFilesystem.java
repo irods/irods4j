@@ -1159,6 +1159,10 @@ public class IRODSFilesystem {
 				map.put(row.get(0), row.get(1));
 			}
 
+			if (map.isEmpty()) {
+				return perms;
+			}
+
 			// Now, retrieve the user information using the user id of each user.
 			query = String.format("select USER_ID, USER_NAME, USER_ZONE, USER_TYPE where USER_ID in ('%s')",
 					String.join("', '", map.keySet()));
