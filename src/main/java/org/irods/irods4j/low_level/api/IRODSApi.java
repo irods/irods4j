@@ -575,6 +575,8 @@ public class IRODSApi {
 		// This keeps the rest of the code from needing to know
 		// the type of the socket used for communication.
 		comm.socket = comm.sslSocket;
+		comm.sin = new BufferedInputStream(comm.sslSocket.getInputStream());
+		comm.sout = sout;
 
 		// Used as a signal to this function to guard against this
 		// function being executed multiple times.
