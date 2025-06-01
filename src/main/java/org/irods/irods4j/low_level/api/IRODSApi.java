@@ -519,6 +519,12 @@ public class IRODSApi {
 			var port = comm.socket.getPort();
 			var autoCloseUnderlyingSocket = true;
 			comm.sslSocket = (SSLSocket) factory.createSocket(comm.socket, host, port, autoCloseUnderlyingSocket);
+			for (String p : comm.sslSocket.getSupportedProtocols()) {
+				log.debug("Supported TLS protocol: {}", p);
+			}
+			for (String p : comm.sslSocket.getEnabledProtocols()) {
+				log.debug("Enabled TLS protocol: {}", p);
+			}
 			comm.sslSocket.startHandshake();
 			log.debug("Connection secured!");
 		} else {
