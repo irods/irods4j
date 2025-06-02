@@ -617,7 +617,13 @@ public class IRODSApi {
 		final var hdr = new MsgHeader_PI();
 		hdr.type = MsgHeader_PI.MsgType.RODS_DISCONNECT;
 		Network.write(comm.sout, hdr);
-		comm.socket.close();
+		comm.sout.flush();
+		if (comm.secure) {
+			comm.sslSocket.close();
+		}
+		else {
+			comm.socket.close();
+		}
 	}
 
 	public static void rcAuthenticateClient(RcComm comm, String authScheme, String password) throws Exception {
