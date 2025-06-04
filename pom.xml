@@ -45,6 +45,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<jackson.version>2.18.1</jackson.version>
+		<jsonpatch.version>1.13</jsonpatch.version>
 		<junit.version>5.11.4</junit.version>
 		<log4j.version>2.24.3</log4j.version>
 		<woodstox.version>6.5.0</woodstox.version>
@@ -73,6 +74,11 @@
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
 			<version>${woodstox.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.java-json-tools</groupId>
+			<artifactId>json-patch</artifactId>
+			<version>${jsonpatch.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
