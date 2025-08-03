@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.administration.IRODSUsers;
@@ -49,7 +50,7 @@ class IRODSReplicasTest {
 
 		conn = new IRODSConnection();
 		conn.connect(host, port, new QualifiedUsername(username, zone));
-		conn.authenticate("native", password);
+		conn.authenticate(new NativeAuthPlugin(), password);
 	}
 
 	@AfterAll
@@ -78,7 +79,7 @@ class IRODSReplicasTest {
 			// Create a new data object as the rodsuser.
 			try (IRODSConnection rodsuserConn = new IRODSConnection()) {
 				rodsuserConn.connect(host, port, new QualifiedUsername(rodsuser.name, rodsuser.zone));
-				rodsuserConn.authenticate("native", prop.value);
+				rodsuserConn.authenticate(new NativeAuthPlugin(), prop.value);
 
 				try (IRODSDataObjectStream stream = new IRODSDataObjectStream()) {
 					stream.open(rodsuserConn.getRcComm(), logicalPath,
@@ -103,7 +104,7 @@ class IRODSReplicasTest {
 		} finally {
 			try (IRODSConnection rodsuserConn = new IRODSConnection()) {
 				rodsuserConn.connect(host, port, new QualifiedUsername(rodsuser.name, rodsuser.zone));
-				rodsuserConn.authenticate("native", rodsuserPassword);
+				rodsuserConn.authenticate(new NativeAuthPlugin(), rodsuserPassword);
 				IRODSFilesystem.remove(rodsuserConn.getRcComm(), logicalPath, RemoveOptions.NO_TRASH);
 			} catch (Exception e) {
 				log.error(e.getMessage());

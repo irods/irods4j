@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.Reference;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.low_level.api.IRODSApi;
@@ -41,7 +42,7 @@ class RcExecMyRuleTest {
 		comm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.empty());
 		assertNotNull(comm);
-		IRODSApi.rcAuthenticateClient(comm, "native", password);
+		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
 	}
 
 	@AfterAll

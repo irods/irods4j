@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.low_level.api.IRODSApi;
@@ -32,7 +33,7 @@ class RcGeneralAdminTest {
 		comm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.empty());
 		assertNotNull(comm);
-		IRODSApi.rcAuthenticateClient(comm, "native", password);
+		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
 	}
 
 	@AfterAll
@@ -85,7 +86,7 @@ class RcGeneralAdminTest {
 		RcComm comm1 = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.empty());
 		assertNotNull(comm1);
-		IRODSApi.rcAuthenticateClient(comm1, "native", password);
+		IRODSApi.rcAuthenticateClient(comm1, new NativeAuthPlugin(), password);
 
 		// Add child resource to parent resouce.
 		input.arg0 = "add";
@@ -100,7 +101,7 @@ class RcGeneralAdminTest {
 		comm1 = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.empty());
 		assertNotNull(comm1);
-		IRODSApi.rcAuthenticateClient(comm1, "native", password);
+		IRODSApi.rcAuthenticateClient(comm1, new NativeAuthPlugin(), password);
 
 		// Remove child resource from parent resource.
 		input.arg0 = "rm";

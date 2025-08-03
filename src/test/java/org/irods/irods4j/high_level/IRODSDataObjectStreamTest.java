@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.connection.IRODSConnectionPool;
@@ -55,7 +56,7 @@ class IRODSDataObjectStreamTest {
 		comm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.empty());
 		assertNotNull(comm);
-		IRODSApi.rcAuthenticateClient(comm, "native", password);
+		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
 	}
 
 	@AfterAll
@@ -159,7 +160,7 @@ class IRODSDataObjectStreamTest {
 		try (IRODSConnectionPool connPool = new IRODSConnectionPool(streamCount)) {
 			connPool.start(host, port, new QualifiedUsername(username, zone), conn -> {
 				try {
-					IRODSApi.rcAuthenticateClient(conn, "native", password);
+					IRODSApi.rcAuthenticateClient(conn, new NativeAuthPlugin(), password);
 					return true;
 				} catch (Exception e) {
 					return false;

@@ -13,6 +13,7 @@ import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.administration.IRODSUsers;
@@ -48,7 +49,7 @@ class IRODSUsersTest {
 		comm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.empty());
 		assertNotNull(comm);
-		IRODSApi.rcAuthenticateClient(comm, "native", password);
+		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
 
 		// Create a user to test password manipulation.
 		IRODSUsers.addUser(comm, rodsuser, UserType.RODSUSER, ZoneType.LOCAL);
@@ -82,7 +83,7 @@ class IRODSUsersTest {
 		RcComm comm1 = IRODSApi.rcConnect(host, port, rodsuser.name, rodsuser.zone, Optional.empty(), Optional.empty(),
 				Optional.empty(), Optional.empty());
 		assertNotNull(comm1);
-		IRODSApi.rcAuthenticateClient(comm1, "native", prop.value);
+		IRODSApi.rcAuthenticateClient(comm1, new NativeAuthPlugin(), prop.value);
 		IRODSApi.rcDisconnect(comm1);
 	}
 
