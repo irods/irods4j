@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.protocol.packing_instructions.GeneralAdminInp_PI;
@@ -30,7 +31,7 @@ class RcSwitchUserTest {
 		comm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.empty());
 		assertNotNull(comm);
-		IRODSApi.rcAuthenticateClient(comm, "native", password);
+		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
 	}
 
 	@AfterAll
@@ -79,7 +80,7 @@ class RcSwitchUserTest {
 		var adminComm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(),
 				Optional.empty(), Optional.empty());
 		assertNotNull(adminComm);
-		IRODSApi.rcAuthenticateClient(adminComm, "native", password);
+		IRODSApi.rcAuthenticateClient(adminComm, new NativeAuthPlugin(), password);
 
 		// Remove the rodsuser.
 		var removeUserInput = new GeneralAdminInp_PI();

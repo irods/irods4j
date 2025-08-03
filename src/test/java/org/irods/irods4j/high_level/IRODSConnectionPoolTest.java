@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.connection.IRODSConnectionPool;
@@ -44,7 +45,7 @@ class IRODSConnectionPoolTest {
 		try (var pool = new IRODSConnectionPool(10)) {
 			pool.start(host, port, new QualifiedUsername(username, zone), comm -> {
 				try {
-					IRODSApi.rcAuthenticateClient(comm, "native", password);
+					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
 
 					// Returning true lets the connection pool know that authentication was
 					// successful.
@@ -74,7 +75,7 @@ class IRODSConnectionPoolTest {
 			// Use the thread pool to speed up the connection process.
 			pool.start(threadPool, host, port, new QualifiedUsername(username, zone), comm -> {
 				try {
-					IRODSApi.rcAuthenticateClient(comm, "native", password);
+					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
 
 					// Returning true lets the connection pool know that authentication was
 					// successful.
@@ -103,7 +104,7 @@ class IRODSConnectionPoolTest {
 			try (var pool = new IRODSConnectionPool(1)) {
 				pool.start("INVALID_HOST", port, new QualifiedUsername(username, zone), comm -> {
 					try {
-						IRODSApi.rcAuthenticateClient(comm, "native", password);
+						IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
 						return true;
 					} catch (Exception e) {
 						return false;
@@ -119,7 +120,7 @@ class IRODSConnectionPoolTest {
 			try (var pool = new IRODSConnectionPool(1)) {
 				pool.start(host, 9000, new QualifiedUsername(username, zone), comm -> {
 					try {
-						IRODSApi.rcAuthenticateClient(comm, "native", password);
+						IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
 						return true;
 					} catch (Exception e) {
 						return false;
@@ -135,7 +136,7 @@ class IRODSConnectionPoolTest {
 			try (var pool = new IRODSConnectionPool(1)) {
 				pool.start(host, port, new QualifiedUsername(username, zone), comm -> {
 					try {
-						IRODSApi.rcAuthenticateClient(comm, "INVALID_AUTH_SCHEME", password);
+						IRODSApi.rcAuthenticateClient(comm, null, password);
 						return true;
 					} catch (Exception e) {
 						return false;

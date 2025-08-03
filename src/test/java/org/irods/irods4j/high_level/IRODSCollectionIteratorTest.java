@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.connection.IRODSConnection;
@@ -42,7 +43,7 @@ class IRODSCollectionIteratorTest {
 
 		conn = new IRODSConnection();
 		conn.connect(host, port, new QualifiedUsername(username, zone));
-		conn.authenticate("native", password);
+		conn.authenticate(new NativeAuthPlugin(), password);
 	}
 
 	@AfterAll

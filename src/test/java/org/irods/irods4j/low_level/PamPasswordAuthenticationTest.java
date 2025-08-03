@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.Optional;
 
+import org.irods.irods4j.authentication.PamPasswordAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.low_level.api.IRODSApi;
@@ -47,7 +48,7 @@ class PamPasswordAuthenticationTest {
 	@Test
 	void testPamPasswordAuthentication() {
 		assumeTrue(false, "Disabled until there are config options for working with a PAM-enabled server");
-		assertDoesNotThrow(() -> IRODSApi.rcAuthenticateClient(comm, "pam_password", password));
+		assertDoesNotThrow(() -> IRODSApi.rcAuthenticateClient(comm, new PamPasswordAuthPlugin(true), password));
 	}
 
 }

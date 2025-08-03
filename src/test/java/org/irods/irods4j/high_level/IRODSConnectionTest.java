@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.Reference;
 import org.irods.irods4j.common.XmlUtil;
@@ -51,17 +52,16 @@ class IRODSConnectionTest {
 
 	@Test
 	void testConnectAuthenticateAndDisconnect() throws Exception {
-		@SuppressWarnings("resource")
 		var conn = new IRODSConnection();
 		conn.connect(host, port, new QualifiedUsername(username, zone));
-		conn.authenticate("native", password);
+		conn.authenticate(new NativeAuthPlugin(), password);
 		conn.disconnect();
 	}
 
 	static IRODSConnection connectUsingTryWithResources() throws Exception {
 		try (var conn = new IRODSConnection()) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			conn.authenticate("native", password);
+			conn.authenticate(new NativeAuthPlugin(), password);
 			return conn;
 		}
 	}
@@ -90,7 +90,7 @@ class IRODSConnectionTest {
 	void testConnectingViaAProxyUser() throws Exception {
 		try (var adminConn = new IRODSConnection()) {
 			adminConn.connect(host, port, new QualifiedUsername(username, zone));
-			adminConn.authenticate("native", password);
+			adminConn.authenticate(new NativeAuthPlugin(), password);
 			assertTrue(adminConn.isConnected());
 
 			// Create a new user. We don't need to set a password for the user because we
@@ -103,7 +103,7 @@ class IRODSConnectionTest {
 				var proxyUser = new QualifiedUsername(username, zone);
 				var clientUser = new QualifiedUsername(testUser.name, testUser.zone);
 				conn.connect(host, port, proxyUser, clientUser);
-				conn.authenticate("native", password);
+				conn.authenticate(new NativeAuthPlugin(), password);
 				assertTrue(conn.isConnected());
 
 				// TODO Stat is a special operation which apparently doesn't care about

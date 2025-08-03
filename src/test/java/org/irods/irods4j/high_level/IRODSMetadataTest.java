@@ -2,6 +2,7 @@ package org.irods.irods4j.high_level;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.catalog.IRODSQuery;
@@ -42,7 +43,7 @@ class IRODSMetadataTest {
 		conn = new IRODSConnection();
 		conn.connect(host, port, new QualifiedUsername(username, zone));
 		assertTrue(conn.isConnected());
-		conn.authenticate("native", password);
+		conn.authenticate(new NativeAuthPlugin(), password);
 	}
 
 	@AfterAll
