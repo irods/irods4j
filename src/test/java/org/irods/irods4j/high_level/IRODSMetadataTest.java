@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,7 +56,7 @@ class IRODSMetadataTest {
 	@Test
 	void testAddSetRemoveMetadataForDataObject() throws IOException, IRODSException {
 		var dataName = "testAddSetRemoveMetadataForDataObject";
-		var logicalPath = Paths.get("/", zone, "home", username, dataName).toString();
+		var logicalPath = '/' + String.join("/", zone, "home", username, dataName);
 		var attrName = "data_object_attr_name";
 		var attrValue = "data_object_attr_value";
 
@@ -103,7 +102,7 @@ class IRODSMetadataTest {
 	@Test
 	void testAddSetRemoveMetadataForDataObjectAsAdmin() throws IOException, IRODSException {
 		var dataName = "testAddSetRemoveMetadataForDataObject";
-		var logicalPath = Paths.get("/", zone, "home", username, dataName).toString();
+		var logicalPath = '/' + String.join("/", zone, "home", username, dataName);
 		var attrName = "data_object_attr_name";
 		var attrValue = "data_object_attr_value";
 
@@ -186,7 +185,7 @@ class IRODSMetadataTest {
 
 	@Test
 	void testAddSetRemoveMetadataForCollection() throws IOException, IRODSException {
-		var collection = Paths.get("/", zone, "home", username).toString();
+		var collection = '/' + String.join("/", zone, "home", username);
 		var attrName = "collection_attr_name";
 		var attrValue = "collection_attr_value";
 
@@ -222,7 +221,7 @@ class IRODSMetadataTest {
 
 	@Test
 	void testAddSetRemoveMetadataForCollectionAsAdmin() throws IOException, IRODSException {
-		var collection = Paths.get("/", zone, "home", username).toString();
+		var collection = '/' + String.join("/", zone, "home", username);
 		var attrName = "collection_attr_name";
 		var attrValue = "collection_attr_value";
 

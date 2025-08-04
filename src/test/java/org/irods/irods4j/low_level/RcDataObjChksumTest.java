@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
@@ -42,7 +41,7 @@ class RcDataObjChksumTest {
 		assertNotNull(comm);
 		IRODSApi.rcAuthenticateClient(comm, "native", password);
 
-		dataObjPath = Paths.get("/", zone, "home", username, "createdByTestDataObjChksumSuite.txt").toString();
+		dataObjPath = '/' + String.join("/", zone, "home", username, "createdByTestDataObjChksumSuite.txt");
 
 		// Open a data object for writing.
 		var openInput = new DataObjInp_PI();

@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import org.apache.logging.log4j.LogManager;
@@ -57,7 +56,7 @@ class IRODSCollectionIteratorTest {
 	@Test
 	void testIteratingOverCollectionHoldingAllHomeCollections() throws Exception {
 		var paths = new ArrayList<String>();
-		var collection = Paths.get("/", zone, "home").toString();
+		var collection = '/' + String.join("/", zone, "home");
 		for (var e : new IRODSCollectionIterator(conn.getRcComm(), collection)) {
 			paths.add(e.path());
 		}
@@ -68,7 +67,7 @@ class IRODSCollectionIteratorTest {
 	@Test
 	void testIteratingOverAnEmptyCollection() throws Exception {
 		var paths = new ArrayList<String>();
-		var collection = Paths.get("/", zone, "home", "public").toString();
+		var collection = '/' + String.join("/", zone, "home", "public");
 		for (var e : new IRODSCollectionIterator(conn.getRcComm(), collection)) {
 			paths.add(e.path());
 		}
@@ -78,7 +77,7 @@ class IRODSCollectionIteratorTest {
 	@Test
 	void testConstructingAnIteratorFromADataObjectPathResultsInANullIterator() throws Exception {
 		var dataObjectName = "testIteratingUsingADataObjectPathResultsInAnException";
-		var path = Paths.get("/", zone, "home", username, dataObjectName).toString();
+		var path = '/' + String.join("/", zone, "home", username, dataObjectName);
 
 		try {
 			// Create the data object.

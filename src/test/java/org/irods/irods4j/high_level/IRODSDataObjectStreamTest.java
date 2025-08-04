@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -67,9 +66,7 @@ class IRODSDataObjectStreamTest {
 
 	@Test
 	void testDataObjectStreamCapturesReplicaNumberAndReplicaToken() throws Exception {
-		var logicalPath = Paths
-				.get("/", zone, "home", username, "testDataObjectStreamCapturesReplicaNumberAndReplicaToken.txt")
-				.toString();
+		var logicalPath = '/' + String.join("/", zone, "home", username, "testDataObjectStreamCapturesReplicaNumberAndReplicaToken.txt");
 
 		var in = new IRODSDataObjectStream();
 		in.open(comm, logicalPath, OpenFlags.O_CREAT | OpenFlags.O_WRONLY);
@@ -90,7 +87,7 @@ class IRODSDataObjectStreamTest {
 
 	@Test
 	void testReadingAndWritingUsingInputOutputStreams() throws IOException, IRODSException {
-		var logicalPath = Paths.get("/", zone, "home", username, "testInputOutputStreamImplementation").toString();
+		var logicalPath = '/' + String.join("/", zone, "home", username, "testInputOutputStreamImplementation");
 
 		try {
 			var truncate = true;
@@ -120,8 +117,7 @@ class IRODSDataObjectStreamTest {
 
 	@Test
 	void testReadingAndWritingUsingInputOutputStreamsAndVerySmallInternalBuffer() throws IOException, IRODSException {
-		var logicalPath = Paths.get("/", zone, "home", username,
-				"testReadingAndWritingUsingInputOutputStreamsAndVerySmallInternalBuffer").toString();
+		var logicalPath = '/' + String.join("/", zone, "home", username, "testReadingAndWritingUsingInputOutputStreamsAndVerySmallInternalBuffer");
 
 		try {
 			// The buffer size used by the input/output streams. The size is intentionally
@@ -157,7 +153,7 @@ class IRODSDataObjectStreamTest {
 
 	@Test
 	void testParallelTransferOverPort1247() throws Exception {
-		var logicalPath = Paths.get("/", zone, "home", username, "testParallelTransferOverPort1247.txt").toString();
+		var logicalPath = '/' + String.join("/", zone, "home", username, "testParallelTransferOverPort1247.txt");
 		var streamCount = 3;
 
 		try (var connPool = new IRODSConnectionPool(streamCount)) {
@@ -181,9 +177,9 @@ class IRODSDataObjectStreamTest {
 				var replicaNumber = stream1.getReplicaNumber();
 
 				try (var stream2 = new IRODSDataObjectStream();
-						var stream3 = new IRODSDataObjectStream();
-						var conn2 = connPool.getConnection();
-						var conn3 = connPool.getConnection()) {
+					 var stream3 = new IRODSDataObjectStream();
+					 var conn2 = connPool.getConnection();
+					 var conn3 = connPool.getConnection()) {
 					// Open the secondary streams using the replica token and replica number from
 					// the primary stream.
 					stream2.open(conn2.getRcComm(), replicaToken, logicalPath, replicaNumber, OpenFlags.O_WRONLY);

@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -63,8 +62,7 @@ class IRODSReplicasTest {
 
 	@Test
 	void testCalculateChecksumForReplicaAsAdminWithoutPermissionsOnDataObject() throws Exception {
-		var logicalPath = Paths.get("/", zone, "home", rodsuser.name, "testUpdateModificationTimeOfReplicaAsAdmin.txt")
-				.toString();
+		var logicalPath = '/' + String.join("/", zone, "home", rodsuser.name, "testUpdateModificationTimeOfReplicaAsAdmin.txt");
 		var rodsuserPassword = "thepassword";
 
 		try {

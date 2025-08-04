@@ -1,7 +1,6 @@
 package org.irods.irods4j.high_level.vfs;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 
@@ -316,7 +315,7 @@ public class IRODSCollectionIterator implements Iterable<CollectionEntry> {
 			}
 
 			e.dataId = row.get(0);
-			e.path = Paths.get(iter.logicalPath, row.get(1)).toString();
+			e.path = String.join("/", iter.logicalPath, row.get(1));
 			e.dataSize = Long.parseLong(row.get(2));
 			e.checksum = row.get(3);
 			e.dataMode = Integer.parseInt(row.get(4));

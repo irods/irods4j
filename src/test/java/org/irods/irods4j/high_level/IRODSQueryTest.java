@@ -1,7 +1,6 @@
 package org.irods.irods4j.high_level;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -17,6 +16,7 @@ import org.irods.irods4j.high_level.connection.IRODSConnection;
 import org.irods.irods4j.high_level.connection.QualifiedUsername;
 import org.irods.irods4j.high_level.io.IRODSDataObjectOutputStream;
 import org.irods.irods4j.high_level.vfs.IRODSFilesystem;
+import org.irods.irods4j.high_level.vfs.LogicalPath;
 import org.irods.irods4j.low_level.api.GenQuery1Columns;
 import org.irods.irods4j.low_level.api.GenQuery1SortOptions;
 import org.irods.irods4j.low_level.api.IRODSException;
@@ -164,13 +164,13 @@ class IRODSQueryTest {
 		final var supportsAccessTime = Versioning.compareVersions(conn.getRcComm().relVersion.substring(4), "5.0.0") >= 0;
 		assumeTrue(supportsAccessTime, "Access time for replicas requires iRODS 5 or later");
 
-		var logicalPath = Paths.get("/", zone, "home", username, "atime.txt");
+		var logicalPath = '/' + String.join("/", zone, "home", username, "atime.txt");
 
 		try {
 			// Create a new data object and write some data to it.
 			var truncate = false;
 			var append = false;
-			try (var out = new IRODSDataObjectOutputStream(conn.getRcComm(), logicalPath.toString(), truncate, append)) {
+			try (var out = new IRODSDataObjectOutputStream(conn.getRcComm(), logicalPath, truncate, append)) {
 				assertTrue(out.isOpen());
 			}
 
@@ -182,8 +182,8 @@ class IRODSQueryTest {
 			input.addColumnToSelectClause(GenQuery1Columns.COL_D_ACCESS_TIME);
 
 			// where COLL_NAME like '/tempZone/home/rods and DATA_NAME = 'atime.txt'
-			var collNameCondStr = String.format("= '%s'", logicalPath.getParent().toString());
-			var dataNameCondStr = String.format("= '%s'", logicalPath.getFileName().toString());
+			var collNameCondStr = String.format("= '%s'", LogicalPath.parentPath(logicalPath));
+			var dataNameCondStr = String.format("= '%s'", LogicalPath.objectName(logicalPath));
 			input.addConditionToWhereClause(GenQuery1Columns.COL_COLL_NAME, collNameCondStr);
 			input.addConditionToWhereClause(GenQuery1Columns.COL_DATA_NAME, dataNameCondStr);
 
@@ -202,7 +202,7 @@ class IRODSQueryTest {
 				return false;
 			});
 		} finally {
-			assertDoesNotThrow(() -> IRODSFilesystem.remove(conn.getRcComm(), logicalPath.toString(), IRODSFilesystem.RemoveOptions.NO_TRASH));
+			assertDoesNotThrow(() -> IRODSFilesystem.remove(conn.getRcComm(), logicalPath, IRODSFilesystem.RemoveOptions.NO_TRASH));
 		}
 	}
 
@@ -211,18 +211,18 @@ class IRODSQueryTest {
 		final var supportsAccessTime = Versioning.compareVersions(conn.getRcComm().relVersion.substring(4), "5.0.0") >= 0;
 		assumeTrue(supportsAccessTime, "Access time for replicas requires iRODS 5 or later");
 
-		var logicalPath = Paths.get("/", zone, "home", username, "atime.txt");
+		var logicalPath = '/' + String.join("/", zone, "home", username, "atime.txt");
 
 		try {
 			// Create a new data object and write some data to it.
 			var truncate = false;
 			var append = false;
-			try (var out = new IRODSDataObjectOutputStream(conn.getRcComm(), logicalPath.toString(), truncate, append)) {
+			try (var out = new IRODSDataObjectOutputStream(conn.getRcComm(), logicalPath, truncate, append)) {
 				assertTrue(out.isOpen());
 			}
 
 			var queryString = String.format("select COLL_NAME, DATA_NAME, DATA_ACCESS_TIME where COLL_NAME = '%s' and DATA_NAME = '%s'",
-					logicalPath.getParent().toString(), logicalPath.getFileName().toString());
+					LogicalPath.parentPath(logicalPath), LogicalPath.objectName(logicalPath));
 			var rows = IRODSQuery.executeGenQuery2(conn.getRcComm(), zone, queryString);
 			assertEquals(1, rows.size());
 
@@ -230,7 +230,7 @@ class IRODSQueryTest {
 			assertEquals(3, row.size());
 			assertEquals(11, row.get(2).length());
 		} finally {
-			assertDoesNotThrow(() -> IRODSFilesystem.remove(conn.getRcComm(), logicalPath.toString(), IRODSFilesystem.RemoveOptions.NO_TRASH));
+			assertDoesNotThrow(() -> IRODSFilesystem.remove(conn.getRcComm(), logicalPath, IRODSFilesystem.RemoveOptions.NO_TRASH));
 		}
 	}
 

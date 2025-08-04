@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -44,7 +43,7 @@ class RcTouchTest {
 
 	@Test
 	void testRcTouch() throws IOException {
-		var logicalPath = Paths.get("/", zone, "home", username).toString();
+		var logicalPath = '/' + String.join("/", zone, "home", username);
 		var mtime = 1700000000;
 
 		// Set the mtime of the rodsadmin's home collection to a specific value.
