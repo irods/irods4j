@@ -1,12 +1,7 @@
 package org.irods.irods4j.high_level.vfs;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -125,8 +120,8 @@ public class IRODSFilesystem {
 			}
 
 			if (isCollection(toStatus)) {
-				String objectName = Paths.get(from).getFileName().toString();
-				String toPath = Paths.get(to, objectName).toString();
+				String objectName = LogicalPath.objectName(from);
+				String toPath = String.join("/", to, objectName);
 				copyDataObject(comm, from, toPath, copyOptions);
 				return;
 			}
@@ -142,8 +137,8 @@ public class IRODSFilesystem {
 				}
 
 				for (CollectionEntry e : new IRODSCollectionIterator(comm, from)) {
-					String objectName = Paths.get(e.path).getFileName().toString();
-					String toPath = Paths.get(to, objectName).toString();
+					String objectName = LogicalPath.objectName(e.path);
+					String toPath = String.join("/", to, objectName);
 					copy(comm, e.path, toPath, copyOptions | CopyOptions.IN_RECURSIVE_COPY);
 				}
 			}
@@ -423,11 +418,11 @@ public class IRODSFilesystem {
 		throwIfNullOrEmpty(path, "Path is null or empty");
 		throwIfPathLengthExceedsLimit(path);
 
-		Path p = Paths.get(path);
-		String query = String.format("select COLL_ID where COLL_NAME = '%s'", p.getParent().toString());
-		String zone = extractZoneFromPath(path);
-
-		return !IRODSQuery.executeGenQuery2(comm, zone, query).isEmpty();
+		String query = String.format("select COLL_ID where COLL_NAME = '%s'", LogicalPath.parentPath(path));
+		Optional<String> zone = extractZoneFromPath(path);
+		return zone.isPresent()
+			? !IRODSQuery.executeGenQuery2(comm, zone.get(), query).isEmpty()
+			: !IRODSQuery.executeGenQuery2(comm, query).isEmpty();
 	}
 
 	/**
@@ -447,12 +442,12 @@ public class IRODSFilesystem {
 		throwIfNullOrEmpty(path, "Path is null or empty");
 		throwIfPathLengthExceedsLimit(path);
 
-		Path p = Paths.get(path);
 		String query = String.format("select DATA_ID where COLL_NAME = '%s' and DATA_NAME = '%s'",
-				p.getParent().toString(), p.getFileName().toString());
-		String zone = extractZoneFromPath(path);
-
-		return !IRODSQuery.executeGenQuery2(comm, zone, query).isEmpty();
+				LogicalPath.parentPath(path), LogicalPath.objectName(path));
+		Optional<String> zone = extractZoneFromPath(path);
+		return zone.isPresent()
+			? !IRODSQuery.executeGenQuery2(comm, zone.get(), query).isEmpty()
+			: !IRODSQuery.executeGenQuery2(comm, query).isEmpty();
 	}
 
 	/**
@@ -518,12 +513,13 @@ public class IRODSFilesystem {
 					"Path does not identify a data object", path);
 		}
 
-		String zone = extractZoneFromPath(path);
-		Path p = Paths.get(path);
+		Optional<String> zone = extractZoneFromPath(path);
 		String query = String.format(
 				"select DATA_SIZE, DATA_MODIFY_TIME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_STATUS = '1'",
-				p.getParent().toString(), p.getFileName().toString());
-		List<List<String>> rows = IRODSQuery.executeGenQuery2(comm, zone, query);
+				LogicalPath.parentPath(path), LogicalPath.objectName(path));
+		List<List<String>> rows = zone.isPresent()
+			? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
+			: IRODSQuery.executeGenQuery2(comm, query);
 
 		if (rows.isEmpty()) {
 			throw new IRODSFilesystemException(IRODSErrorCodes.SYS_NO_GOOD_REPLICA, "No good replica available", path);
@@ -655,9 +651,12 @@ public class IRODSFilesystem {
 		throwIfNullOrEmpty(path, "Path is null or empty");
 
 		String query = String.format("select COLL_TYPE, COLL_INFO1, COLL_INFO2 where COLL_NAME = '%s'", path);
-		String zone = extractZoneFromPath(path);
+		Optional<String> zone = extractZoneFromPath(path);
 
-		for (List<String> row : IRODSQuery.executeGenQuery2(comm, zone, query)) {
+		List<List<String>> rows = zone.isPresent()
+			? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
+			: IRODSQuery.executeGenQuery2(comm, query);
+		for (List<String> row : rows) {
 			return !row.get(0).isEmpty() && (!row.get(1).isEmpty() || !row.get(2).isEmpty());
 		}
 
@@ -719,11 +718,10 @@ public class IRODSFilesystem {
 		String query = null;
 
 		if (isDataObject(s)) {
-			Path p = Paths.get(path);
 			// Fetch information for good replicas only.
 			query = String.format(
 					"select max(DATA_MODIFY_TIME) where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_STATUS = '1'",
-					p.getParent().toString(), p.getFileName().toString());
+					LogicalPath.parentPath(path), LogicalPath.objectName(path));
 		} else if (isCollection(s)) {
 			query = String.format("select COLL_MODIFY_TIME where COLL_NAME = '%s'", path);
 		} else {
@@ -731,9 +729,11 @@ public class IRODSFilesystem {
 					"Path does not identify a data object or collection", path);
 		}
 
-		String zone = extractZoneFromPath(path);
-
-		for (List<String> row : IRODSQuery.executeGenQuery2(comm, zone, query)) {
+		Optional<String> zone = extractZoneFromPath(path);
+		List<List<String>> rows = zone.isPresent()
+			? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
+			: IRODSQuery.executeGenQuery2(comm, query);
+		for (List<String> row : rows) {
 			return Long.parseLong(row.get(0));
 		}
 
@@ -1019,11 +1019,10 @@ public class IRODSFilesystem {
 					"Logical path does not point to a data object", path);
 		}
 
-		Path fspath = Paths.get(path);
 		String query = String.format(
 				"select DATA_CHECKSUM, DATA_MODIFY_TIME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_STATUS = '1'",
-				fspath.getParent().toAbsolutePath(), fspath.getFileName());
-		String zone = extractZoneFromPath(path);
+				LogicalPath.parentPath(path), LogicalPath.objectName(path));
+		Optional<String> zone = extractZoneFromPath(path);
 
 		long latestMtime = 0L;
 		String checksum = "";
@@ -1032,7 +1031,12 @@ public class IRODSFilesystem {
 		// requirement within the loop, therefore the first iteration always causes the
 		// checksum to be captured. The checksum object should be empty if and only if
 		// there are no good replicas.
-		for (List<String> row : IRODSQuery.executeGenQuery2(comm, zone, query)) {
+
+		List<List<String>> rows = zone.isPresent()
+			? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
+			: IRODSQuery.executeGenQuery2(comm, query);
+
+		for (List<String> row : rows) {
 			long curMtime = Long.parseLong(row.get(1));
 			if (curMtime > latestMtime) {
 				latestMtime = curMtime;
@@ -1043,14 +1047,15 @@ public class IRODSFilesystem {
 		return checksum;
 	}
 
-	private static String extractZoneFromPath(String path) {
-		Path p = Paths.get(path);
-
-		if (!p.isAbsolute()) {
+	private static Optional<String> extractZoneFromPath(String path) {
+		if (!LogicalPath.isAbsolute(path)) {
 			throw new IllegalArgumentException("Path is not absolute");
 		}
-
-		return p.getName(0).toString();
+		List<String> segments = LogicalPath.segments(path);
+		if (segments.size() <= 1) {
+			return Optional.empty();
+		}
+		return Optional.of(segments.get(1));
 	}
 
 	private static void throwIfNull(Object object, String message) {
@@ -1132,8 +1137,7 @@ public class IRODSFilesystem {
 		ArrayList<EntityPermission> perms = new ArrayList<EntityPermission>();
 
 		if (/* DATA_OBJ_T */ 1 == objectType) {
-			String zone = extractZoneFromPath(path);
-			Path fspath = Paths.get(path);
+			Optional<String> zone = extractZoneFromPath(path);
 			// TODO Open issue for this GenQuery2 query. It uses the wrong table alias for
 			// DATA_ACCESS_USER_ZONE. The workaround is to use DATA_ACCESS_USER_ID and
 			// resolve the user name, user zone, and user type against it.
@@ -1155,8 +1159,11 @@ public class IRODSFilesystem {
 			HashMap<String, String> map = new HashMap<String, String>();
 			String query = String.format(
 					"select DATA_ACCESS_USER_ID, DATA_ACCESS_PERM_NAME where COLL_NAME = '%s' and DATA_NAME = '%s'",
-					fspath.getParent().toString(), fspath.getFileName().toString());
-			for (List<String> row : IRODSQuery.executeGenQuery2(comm, zone, query)) {
+					LogicalPath.parentPath(path), LogicalPath.objectName(path));
+			List<List<String>> rows = zone.isPresent()
+				? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
+				: IRODSQuery.executeGenQuery2(comm, query);
+			for (List<String> row : rows) {
 				map.put(row.get(0), row.get(1));
 			}
 
@@ -1168,7 +1175,10 @@ public class IRODSFilesystem {
 			query = String.format("select USER_ID, USER_NAME, USER_ZONE, USER_TYPE where USER_ID in ('%s')",
 					String.join("', '", map.keySet()));
 			log.debug("Query for data object permissions = [{}]", query);
-			for (List<String> row : IRODSQuery.executeGenQuery2(comm, zone, query)) {
+			rows = zone.isPresent()
+				? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
+				: IRODSQuery.executeGenQuery2(comm, query);
+			for (List<String> row : rows) {
 				EntityPermission ep = new EntityPermission();
 				ep.name = row.get(1);
 				ep.zone = row.get(2);
@@ -1179,17 +1189,30 @@ public class IRODSFilesystem {
 		}
 
 		if (/* COLL_OBJ_T */ 2 == objectType) {
-			String zone = extractZoneFromPath(path);
+			Optional<String> zone = extractZoneFromPath(path);
 			List<String> bindArgs = Arrays.asList(path);
-			IRODSQuery.executeSpecificQuery(comm, zone, "ShowCollAcls", bindArgs, row -> {
-				EntityPermission ep = new EntityPermission();
-				ep.name = row.get(0);
-				ep.zone = row.get(1);
-				ep.prms = toPermissionEnum(row.get(2));
-				ep.type = IRODSUsers.toUserType(row.get(3));
-				perms.add(ep);
-				return true;
-			});
+			if (zone.isPresent()) {
+				IRODSQuery.executeSpecificQuery(comm, zone.get(), "ShowCollAcls", bindArgs, row -> {
+					EntityPermission ep = new EntityPermission();
+					ep.name = row.get(0);
+					ep.zone = row.get(1);
+					ep.prms = toPermissionEnum(row.get(2));
+					ep.type = IRODSUsers.toUserType(row.get(3));
+					perms.add(ep);
+					return true;
+				});
+			}
+			else {
+				IRODSQuery.executeSpecificQuery(comm, "ShowCollAcls", bindArgs, row -> {
+					EntityPermission ep = new EntityPermission();
+					ep.name = row.get(0);
+					ep.zone = row.get(1);
+					ep.prms = toPermissionEnum(row.get(2));
+					ep.type = IRODSUsers.toUserType(row.get(3));
+					perms.add(ep);
+					return true;
+				});
+			}
 		}
 
 		return perms;
@@ -1200,9 +1223,12 @@ public class IRODSFilesystem {
 			return false;
 		}
 
-		String zone = extractZoneFromPath(path);
+		Optional<String> zone = extractZoneFromPath(path);
 		String query = String.format("select COLL_INHERITANCE where COLL_NAME = '%s'", path);
-		for (List<String> row : IRODSQuery.executeGenQuery2(comm, zone, query)) {
+		List<List<String>> rows = zone.isPresent()
+			? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
+			: IRODSQuery.executeGenQuery2(comm, query);
+		for (List<String> row : rows) {
 			return "1".equals(row.get(0));
 		}
 

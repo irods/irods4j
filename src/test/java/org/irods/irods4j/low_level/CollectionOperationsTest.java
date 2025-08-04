@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -44,7 +43,7 @@ class CollectionOperationsTest {
 	void testCreatingAndDeletingCollections() throws IOException {
 		// Create a new collection.
 		CollInpNew_PI input = new CollInpNew_PI();
-		input.collName = Paths.get("/", zone, "home", username, "irods4j_test_coll").toString();
+		input.collName = '/' + String.join("/", zone, "home", username, "irods4j_test_coll");
 		input.KeyValPair_PI = new KeyValPair_PI(); // Not necessary as shown through testing.
 		input.KeyValPair_PI.ssLen = 0; // Not necessary as shown through testing.
 

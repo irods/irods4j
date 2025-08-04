@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -113,8 +112,8 @@ class IRODSConnectionTest {
 				//
 				// Stat the admin's home collection. This will fail due to the test user not
 				// having permission to see the target collection.
-				DataObjInp_PI input = new DataObjInp_PI();
-				input.objPath = Paths.get("/", zone, "home", username).toString();
+				DataObjInp_PI  input = new DataObjInp_PI();
+				input.objPath = '/' + String.join("/", zone, "home", username);
 				input.KeyValPair_PI = new KeyValPair_PI();
 				Reference<RodsObjStat_PI> output = new Reference<RodsObjStat_PI>();
 				int ec = IRODSApi.rcObjStat(conn.getRcComm(), input, output);
@@ -123,7 +122,7 @@ class IRODSConnectionTest {
 
 				// Stat the test user's home collection. This will succeed because the test user
 				// has the appropriate permissions for viewing the collection.
-				input.objPath = Paths.get("/", zone, "home", testUser.name).toString();
+				input.objPath = '/' + String.join("/", zone, "home", testUser.name);
 				ec = IRODSApi.rcObjStat(conn.getRcComm(), input, output);
 				assertEquals(ec, 2);
 			} finally {

@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
@@ -16,6 +14,7 @@ import java.util.Optional;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.Reference;
 import org.irods.irods4j.common.XmlUtil;
+import org.irods.irods4j.high_level.vfs.LogicalPath;
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjInfo_PI;
@@ -47,7 +46,7 @@ class RcModDataObjMetaTest {
 		assertNotNull(comm);
 		IRODSApi.rcAuthenticateClient(comm, "native", password);
 
-		dataObjPath = Paths.get("/", zone, "home", username, "createdByTestModDataObjMeta.txt").toString();
+		dataObjPath = '/' + String.join("/", zone, "home", username, "createdByTestModDataObjMeta.txt");
 
 		// Open a data object for writing.
 		DataObjInp_PI openInput = new DataObjInp_PI();
@@ -133,9 +132,8 @@ class RcModDataObjMetaTest {
 		assertNotNull(output);
 		assertNotNull(output.value);
 
-		Path logicalPath = Paths.get(dataObjPath);
-		String collName = logicalPath.getParent().toString();
-		String dataName = logicalPath.getFileName().toString();
+		String collName = LogicalPath.parentPath(dataObjPath);
+		String dataName = LogicalPath.objectName(dataObjPath);
 		assertTrue(output.value.contains(String.format("[\"%s\",\"%s\"]", collName, dataName)));
 
 	}

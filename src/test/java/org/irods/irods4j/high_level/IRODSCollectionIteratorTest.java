@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -58,8 +58,8 @@ class IRODSCollectionIteratorTest {
 
 	@Test
 	void testIteratingOverCollectionHoldingAllHomeCollections() throws Exception {
-		ArrayList<String> paths = new ArrayList<String>();
-		String collection = Paths.get("/", zone, "home").toString();
+		List<String> paths = new ArrayList<>();
+		String collection = '/' + String.join("/", zone, "home");
 		for (CollectionEntry e : new IRODSCollectionIterator(conn.getRcComm(), collection)) {
 			paths.add(e.path());
 		}
@@ -69,8 +69,8 @@ class IRODSCollectionIteratorTest {
 
 	@Test
 	void testIteratingOverAnEmptyCollection() throws Exception {
-		ArrayList<String> paths = new ArrayList<String>();
-		String collection = Paths.get("/", zone, "home", "public").toString();
+		List<String> paths = new ArrayList<>();
+		String collection = '/' + String.join("/", zone, "home", "public");
 		for (CollectionEntry e : new IRODSCollectionIterator(conn.getRcComm(), collection)) {
 			paths.add(e.path());
 		}
@@ -80,7 +80,7 @@ class IRODSCollectionIteratorTest {
 	@Test
 	void testConstructingAnIteratorFromADataObjectPathResultsInANullIterator() throws Exception {
 		String dataObjectName = "testIteratingUsingADataObjectPathResultsInAnException";
-		String path = Paths.get("/", zone, "home", username, dataObjectName).toString();
+		String path = '/' + String.join("/", zone, "home", username, dataObjectName);
 
 		try {
 			// Create the data object.

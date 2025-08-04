@@ -1,8 +1,6 @@
 package org.irods.irods4j.high_level.vfs;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,9 +63,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfLessThanLowerBound(replicaNumber, 0, "Replica number is less than 0");
 
-		Path p = Paths.get(logicalPath);
-		String collName = p.getParent().toString();
-		String dataName = p.getFileName().toString();
+		String collName = LogicalPath.parentPath(logicalPath);
+		String dataName = LogicalPath.objectName(logicalPath);
 
 		String query = "select DATA_SIZE where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_NUM = '%d'";
 		List<List<String>> rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, replicaNumber));
@@ -98,9 +95,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfNullOrEmpty(leafResourceName, "Leaf resource is null or empty");
 
-		Path p = Paths.get(logicalPath);
-		String collName = p.getParent().toString();
-		String dataName = p.getFileName().toString();
+		String collName = LogicalPath.parentPath(logicalPath);
+		String dataName = LogicalPath.objectName(logicalPath);
 
 		String query = "select DATA_SIZE where COLL_NAME = '%s' and DATA_NAME = '%s' and RESC_NAME = '%s'";
 		List<List<String>> rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, leafResourceName));
@@ -716,9 +712,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfLessThanLowerBound(replicaNumber, 0, "Replica number is less than 0");
 
-		Path p = Paths.get(logicalPath);
-		String collName = p.getParent().toString();
-		String dataName = p.getFileName().toString();
+		String collName = LogicalPath.parentPath(logicalPath);
+		String dataName = LogicalPath.objectName(logicalPath);
 
 		String query = "select DATA_MODIFY_TIME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_NUM = '%d'";
 		List<List<String>> rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, replicaNumber));
@@ -750,9 +745,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfNullOrEmpty(leafResourceName, "Resource is null or empty");
 
-		Path p = Paths.get(logicalPath);
-		String collName = p.getParent().toString();
-		String dataName = p.getFileName().toString();
+		String collName = LogicalPath.parentPath(logicalPath);
+		String dataName = LogicalPath.objectName(logicalPath);
 
 		String query = "select DATA_MODIFY_TIME where COLL_NAME = '%s' and DATA_NAME = '%s' and RESC_NAME = '%s'";
 		List<List<String>> rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, leafResourceName));
@@ -860,9 +854,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfNullOrEmpty(leafResourceName, "Resource is null or empty");
 
-		Path p = Paths.get(logicalPath);
-		String collName = p.getParent().toString();
-		String dataName = p.getFileName().toString();
+		String collName = LogicalPath.parentPath(logicalPath);
+		String dataName = LogicalPath.objectName(logicalPath);
 
 		String query = "select DATA_REPL_NUM where COLL_NAME = '%s' and DATA_NAME = '%s' and RESC_NAME = '%s'";
 		List<List<String>> rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, leafResourceName));
@@ -894,9 +887,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfLessThanLowerBound(replicaNumber, 0, "Replica number is less than 0");
 
-		Path p = Paths.get(logicalPath);
-		String collName = p.getParent().toString();
-		String dataName = p.getFileName().toString();
+		String collName = LogicalPath.parentPath(logicalPath);
+		String dataName = LogicalPath.objectName(logicalPath);
 
 		String query = "select RESC_NAME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_NUM = '%d'";
 		List<List<String>> rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, replicaNumber));
@@ -928,9 +920,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfLessThanLowerBound(replicaNumber, 0, "Replica number is less than 0");
 
-		Path p = Paths.get(logicalPath);
-		String collName = p.getParent().toString();
-		String dataName = p.getFileName().toString();
+		String collName = LogicalPath.parentPath(logicalPath);
+		String dataName = LogicalPath.objectName(logicalPath);
 
 		String query = "select DATA_ID where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_NUM = '%d'";
 		return !IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, replicaNumber)).isEmpty();
@@ -957,9 +948,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfNullOrEmpty(leafResourceName, "Resource is null or empty");
 
-		Path p = Paths.get(logicalPath);
-		String collName = p.getParent().toString();
-		String dataName = p.getFileName().toString();
+		String collName = LogicalPath.parentPath(logicalPath);
+		String dataName = LogicalPath.objectName(logicalPath);
 
 		String query = "select DATA_ID where COLL_NAME = '%s' and DATA_NAME = '%s' and RESC_NAME = '%s'";
 		return !IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, leafResourceName)).isEmpty();

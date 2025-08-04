@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -69,9 +68,7 @@ class IRODSDataObjectStreamTest {
 
 	@Test
 	void testDataObjectStreamCapturesReplicaNumberAndReplicaToken() throws Exception {
-		String logicalPath = Paths
-				.get("/", zone, "home", username, "testDataObjectStreamCapturesReplicaNumberAndReplicaToken.txt")
-				.toString();
+		String logicalPath = '/' + String.join("/", zone, "home", username, "testDataObjectStreamCapturesReplicaNumberAndReplicaToken.txt");
 
 		IRODSDataObjectStream in = new IRODSDataObjectStream();
 		in.open(comm, logicalPath, OpenFlags.O_CREAT | OpenFlags.O_WRONLY);
@@ -92,7 +89,7 @@ class IRODSDataObjectStreamTest {
 
 	@Test
 	void testReadingAndWritingUsingInputOutputStreams() throws IOException, IRODSException {
-		String logicalPath = Paths.get("/", zone, "home", username, "testInputOutputStreamImplementation").toString();
+		String logicalPath = '/' + String.join("/", zone, "home", username, "testInputOutputStreamImplementation");
 
 		try {
 			boolean truncate = true;
@@ -121,8 +118,7 @@ class IRODSDataObjectStreamTest {
 
 	@Test
 	void testReadingAndWritingUsingInputOutputStreamsAndVerySmallInternalBuffer() throws IOException, IRODSException {
-		String logicalPath = Paths.get("/", zone, "home", username,
-				"testReadingAndWritingUsingInputOutputStreamsAndVerySmallInternalBuffer").toString();
+		String logicalPath = '/' + String.join("/", zone, "home", username, "testReadingAndWritingUsingInputOutputStreamsAndVerySmallInternalBuffer");
 
 		try {
 			// The buffer size used by the input/output streams. The size is intentionally
@@ -157,7 +153,7 @@ class IRODSDataObjectStreamTest {
 
 	@Test
 	void testParallelTransferOverPort1247() throws Exception {
-		String logicalPath = Paths.get("/", zone, "home", username, "testParallelTransferOverPort1247.txt").toString();
+		String logicalPath = '/' + String.join("/", zone, "home", username, "testParallelTransferOverPort1247.txt");
 		int streamCount = 3;
 
 		try (IRODSConnectionPool connPool = new IRODSConnectionPool(streamCount)) {

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
@@ -41,7 +40,7 @@ class RcAtomicApplyAclOperationsTest {
 
 	@Test
 	void testRcAtomicApplyAclOperations() throws IOException {
-		String logicalPath = Paths.get("/", zone, "home", username).toString();
+		String logicalPath = '/' + String.join("/", zone, "home", username);
 
 		// Set the rodsadmin's permission to "write" on their home collection.
 		// Remember, they can always restore their permissions because they are

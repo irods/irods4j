@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
@@ -43,7 +42,7 @@ class RcAtomicApplyMetadataOperationsTest {
 
 	@Test
 	void testAtomicApplyMetadataOperations() throws IOException {
-		String logicalPath = Paths.get("/", zone, "home", username).toString();
+		String logicalPath = '/' + String.join("/", zone, "home", username);
 		String attrName = "irods4j::atomic_attr_name";
 		String attrValue = "irods4j::atomic_attr_value";
 		String attrUnits = "irods4j::atomic_attr_units";

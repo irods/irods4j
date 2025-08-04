@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,15 +54,14 @@ class IRODSFilesystemTest {
 
 	@Test
 	void testCreateAndDeleteCollection() throws Exception {
-		String collection = Paths.get("/", zone, "home", username, "testCreateAndDeleteCollection").toString();
+		String collection = '/' + String.join("/", zone, "home", username, "testCreateAndDeleteCollection");
 		assertTrue(IRODSFilesystem.createCollection(conn.getRcComm(), collection));
 		assertTrue(IRODSFilesystem.remove(conn.getRcComm(), collection, RemoveOptions.NO_TRASH));
 	}
 
 	@Test
 	void testModifyingTheInheritanceFlagOfACollection() throws IOException, IRODSException {
-		String collection = Paths.get("/", zone, "home", username, "testModifyingTheInheritanceFlagOfACollection")
-				.toString();
+		String collection = '/' + String.join("/", zone, "home", username, "testModifyingTheInheritanceFlagOfACollection");
 
 		try {
 			// Create a new collection.
@@ -90,7 +87,7 @@ class IRODSFilesystemTest {
 
 	@Test
 	void testRenameACollection() throws IOException, IRODSException {
-		String collection = Paths.get("/", zone, "home", username, "testRenameACollection").toString();
+		String collection = '/' + String.join("/", zone, "home", username, "testRenameACollection");
 		String collToRemove = collection;
 
 		try {
@@ -119,35 +116,35 @@ class IRODSFilesystemTest {
 
 	@Test
 	void testCopyADataObjectUsingCopyDataObjectFunction() throws Exception {
-		Path sandbox = Paths.get("/", zone, "home", username, "testCopyADataObjectUsingCopyDataObjectFunction");
+		String sandbox = '/' + String.join("/", zone, "home", username, "testCopyADataObjectUsingCopyDataObjectFunction");
 
 		try {
-			assertTrue(IRODSFilesystem.createCollection(conn.getRcComm(), sandbox.toString()));
+			assertTrue(IRODSFilesystem.createCollection(conn.getRcComm(), sandbox));
 
 			// Create a data object.
-			Path from = sandbox.resolve("data_object1");
+			String from = String.join("/", sandbox, "data_object1");
 			try (IRODSDataObjectStream stream = new IRODSDataObjectStream()) {
-				stream.open(conn.getRcComm(), from.toString(), OpenFlags.O_CREAT | OpenFlags.O_WRONLY);
+				stream.open(conn.getRcComm(), from, OpenFlags.O_CREAT | OpenFlags.O_WRONLY);
 			}
-			ObjectStatus fromStatus = IRODSFilesystem.status(conn.getRcComm(), from.toString());
+			ObjectStatus fromStatus = IRODSFilesystem.status(conn.getRcComm(), from);
 			assertTrue(IRODSFilesystem.exists(fromStatus));
 			assertTrue(IRODSFilesystem.isDataObject(fromStatus));
 
 			// Copy the data object and show that it exists.
-			Path to = sandbox.resolve("data_object2");
-			assertTrue(IRODSFilesystem.copyDataObject(conn.getRcComm(), from.toString(), to.toString()));
+			String to = String.join("/", sandbox, "data_object2");
+			assertTrue(IRODSFilesystem.copyDataObject(conn.getRcComm(), from, to));
 
-			ObjectStatus toStatus = IRODSFilesystem.status(conn.getRcComm(), to.toString());
+			ObjectStatus toStatus = IRODSFilesystem.status(conn.getRcComm(), to);
 			assertTrue(IRODSFilesystem.exists(toStatus));
 			assertTrue(IRODSFilesystem.isDataObject(toStatus));
 		} finally {
-			IRODSFilesystem.removeAll(conn.getRcComm(), sandbox.toString(), RemoveOptions.NO_TRASH);
+			IRODSFilesystem.removeAll(conn.getRcComm(), sandbox, RemoveOptions.NO_TRASH);
 		}
 	}
 
 	@Test
 	void testListPermissionsOnDataObject() throws Exception {
-		String path = Paths.get("/", zone, "home", username, "testListPermissionsOnDataObject").toString();
+		String path = '/' + String.join("/", zone, "home", username, "testListPermissionsOnDataObject");
 
 		// Create a new data object.
 		try (IRODSDataObjectStream out = new IRODSDataObjectStream()) {

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.irods.irods4j.low_level.api.IRODSApi;
@@ -39,7 +38,7 @@ class RcModAVUMetadataTest {
 
 	@Test
 	void testAddingAndRemovingMetadata() throws IOException {
-		String collection = Paths.get("/", zone, "home", username).toString();
+		String collection = '/' + String.join("/", zone, "home", username);
 		String avuName = "irods4j::name";
 		String avuValue = "irods4j::value";
 		String avuUnit = "irods4j::unit";

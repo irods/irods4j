@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
@@ -50,7 +48,7 @@ class StreamOperationsTest {
 
 	@Test
 	void testStreamOperations() throws IOException {
-		Path logicalPath = Paths.get("/", zone, "home", username, "testStreamOperations.txt");
+		String logicalPath = '/' + String.join("/", zone, "home", username, "testStreamOperations.txt");
 
 		// Open a data object for writing.
 		DataObjInp_PI openInput = new DataObjInp_PI();

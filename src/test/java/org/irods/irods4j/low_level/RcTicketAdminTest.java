@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.irods.irods4j.low_level.api.IRODSApi;
@@ -40,7 +39,7 @@ class RcTicketAdminTest {
 	@Test
 	void testCreateAndDeleteTicket() throws IOException {
 		String ticketName = "irods4j_ticket";
-		String collection = Paths.get("/", zone, "home", username).toString();
+		String collection = '/' + String.join("/", zone, "home", username);
 
 		// Create a new ticket on the user's home collection.
 		TicketAdminInp_PI input = new TicketAdminInp_PI();
