@@ -24,6 +24,10 @@ public class NativeAuthPlugin extends AuthPlugin {
 		addOperation(AUTH_CLIENT_AUTH_RESPONSE, this::clientResponse);
 	}
 
+	public String getName() {
+		return "native";
+	}
+
 	@Override
 	public JsonNode authClientStart(RcComm comm, JsonNode context) {
 		var resp = (ObjectNode) context.deepCopy();
