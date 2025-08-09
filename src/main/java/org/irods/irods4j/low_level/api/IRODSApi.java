@@ -339,99 +339,117 @@ public class IRODSApi {
 
 		comm.socket.connect(new InetSocketAddress(host, port));
 
-		comm.sin = new BufferedInputStream(comm.socket.getInputStream());
-		comm.sout = new BufferedOutputStream(comm.socket.getOutputStream());
+		try {
+			comm.sin = new BufferedInputStream(comm.socket.getInputStream());
+			comm.sout = new BufferedOutputStream(comm.socket.getOutputStream());
 
-		// Create the StartupPack message.
-		// This is how a connection to iRODS is always initiated.
-		var sp = new StartupPack_PI();
-		sp.clientUser = comm.clientUsername = clientUsername;
-		sp.clientRcatZone = comm.clientUserZone = clientUserZone;
-		sp.proxyUser = comm.proxyUsername = proxyUsername.orElse(clientUsername);
-		sp.proxyRcatZone = comm.proxyUserZone = proxyUserZone.orElse(clientUserZone);
-		sp.option = appName + "request_server_negotiation";
-		var msgbody = XmlUtil.toXmlString(sp);
+			// Create the StartupPack message.
+			// This is how a connection to iRODS is always initiated.
+			var sp = new StartupPack_PI();
+			sp.clientUser = comm.clientUsername = clientUsername;
+			sp.clientRcatZone = comm.clientUserZone = clientUserZone;
+			sp.proxyUser = comm.proxyUsername = proxyUsername.orElse(clientUsername);
+			sp.proxyRcatZone = comm.proxyUserZone = proxyUserZone.orElse(clientUserZone);
+			sp.option = appName + "request_server_negotiation";
+			var msgbody = XmlUtil.toXmlString(sp);
 
-		// Create the header describing the StartupPack message.
-		var hdr = new MsgHeader_PI();
-		hdr.type = MsgHeader_PI.MsgType.RODS_CONNECT;
-		hdr.msgLen = msgbody.length();
+			// Create the header describing the StartupPack message.
+			var hdr = new MsgHeader_PI();
+			hdr.type = MsgHeader_PI.MsgType.RODS_CONNECT;
+			hdr.msgLen = msgbody.length();
 
-		// Send the message header and StartupPack (i.e. the message body).
-		Network.write(comm.sout, hdr);
-		Network.writeBytes(comm.sout, msgbody.getBytes(StandardCharsets.UTF_8));
-		comm.sout.flush();
+			// Send the message header and StartupPack (i.e. the message body).
+			Network.write(comm.sout, hdr);
+			Network.writeBytes(comm.sout, msgbody.getBytes(StandardCharsets.UTF_8));
+			comm.sout.flush();
 
-		// Read the message header from the server.
-		var mh = Network.readMsgHeader_PI(comm.sin);
-		log.debug("Received MsgHeader_PI: {}", XmlUtil.toXmlString(mh));
+			// Read the message header from the server.
+			var mh = Network.readMsgHeader_PI(comm.sin);
+			log.debug("Received MsgHeader_PI: {}", XmlUtil.toXmlString(mh));
 
-		if (mh.intInfo < 0) {
-			if (errorInfo.isPresent()) {
-				errorInfo.get().status = mh.intInfo;
-				errorInfo.get().msg = "StartupPack error";
+			if (mh.intInfo < 0) {
+				if (errorInfo.isPresent()) {
+					errorInfo.get().status = mh.intInfo;
+					errorInfo.get().msg = "StartupPack error";
+				}
+				comm.socket.close();
+				return null;
 			}
-			return null;
-		}
 
-		// Negotiation
+			// Negotiation
 
-		// Prepare to the negotiate whether a secure communication
-		// channel is needed. The server's response will contain its
-		// choice for secure communication.
-		var csneg = Network.readObject(comm.sin, mh.msgLen, CS_NEG_PI.class);
-		log.debug("Received CS_NEG_PI: {}", XmlUtil.toXmlString(csneg));
+			// Prepare to the negotiate whether a secure communication
+			// channel is needed. The server's response will contain its
+			// choice for secure communication.
+			var csneg = Network.readObject(comm.sin, mh.msgLen, CS_NEG_PI.class);
+			log.debug("Received CS_NEG_PI: {}", XmlUtil.toXmlString(csneg));
 
-		// Check for negotiation errors.
-		// 1 = CS_NEG_STATUS_SUCCESS
-		// 0 = CS_NEG_STATUS_FAILURE
-		// See irods_client_server_negotiation.hpp for these.
-		if (1 != csneg.status) {
-			log.error("Client-Server negotiation error: CS_NEG_STATUS={}", csneg.status);
-			return null;
-		}
-
-		csneg = clientServerNegotiation(comm, connOptions.clientServerNegotiation, csneg.result);
-
-		msgbody = XmlUtil.toXmlString(csneg);
-		hdr.type = MsgHeader_PI.MsgType.RODS_CS_NEG_T;
-		hdr.msgLen = msgbody.length();
-		Network.write(comm.sout, hdr);
-		Network.writeBytes(comm.sout, msgbody.getBytes(StandardCharsets.UTF_8));
-		comm.sout.flush();
-
-		// Read the message header from the server.
-		mh = Network.readMsgHeader_PI(comm.sin);
-		log.debug("Received MsgHeader_PI: {}", XmlUtil.toXmlString(mh));
-
-		if (mh.intInfo < 0) {
-			if (errorInfo.isPresent()) {
-				errorInfo.get().status = mh.intInfo;
-				errorInfo.get().msg = "Client-Server negotiation error";
+			// Check for negotiation errors.
+			// 1 = CS_NEG_STATUS_SUCCESS
+			// 0 = CS_NEG_STATUS_FAILURE
+			// See irods_client_server_negotiation.hpp for these.
+			if (1 != csneg.status) {
+				log.error("Client-Server negotiation error: CS_NEG_STATUS={}", csneg.status);
+				if (errorInfo.isPresent()) {
+					errorInfo.get().status = csneg.status;
+					errorInfo.get().msg = "Client-server negotiation error";
+				}
+				comm.socket.close();
+				return null;
 			}
+
+			csneg = clientServerNegotiation(comm, connOptions.clientServerNegotiation, csneg.result);
+
+			msgbody = XmlUtil.toXmlString(csneg);
+			hdr.type = MsgHeader_PI.MsgType.RODS_CS_NEG_T;
+			hdr.msgLen = msgbody.length();
+			Network.write(comm.sout, hdr);
+			Network.writeBytes(comm.sout, msgbody.getBytes(StandardCharsets.UTF_8));
+			comm.sout.flush();
+
+			// Read the message header from the server.
+			mh = Network.readMsgHeader_PI(comm.sin);
+			log.debug("Received MsgHeader_PI: {}", XmlUtil.toXmlString(mh));
+
+			if (mh.intInfo < 0) {
+				if (errorInfo.isPresent()) {
+					errorInfo.get().status = mh.intInfo;
+					errorInfo.get().msg = "Client-Server negotiation error";
+				}
+				comm.socket.close();
+				return null;
+			}
+
+			// Capture the server version information.
+			var vers = Network.readObject(comm.sin, mh.msgLen, Version_PI.class);
+			log.debug("Received Version_PI: {}", XmlUtil.toXmlString(vers));
+			comm.apiVersion = vers.apiVersion;
+			comm.relVersion = vers.relVersion;
+			comm.status = vers.status;
+			comm.cookie = vers.cookie;
+
+			// Store the desired hashing algorithm in the RcComm. This is needed
+			// for password obfuscation (if the client wishes to manipulate user's
+			// passwords).
+			comm.hashAlgorithm = connOptions.hashAlgorithm;
+
+			// TODO In the C implementation, this is where the network_plugin
+			// is instantiated and the decision to use TLS happens. That decision
+			// is based on the negotiation results, which are stored in the RcComm.
+			// The RcComm holds information about encryption and other parameters.
+			// That's why messages appear to be encrypted following the version
+			// response from the server.
+			enableTLS(comm, connOptions);
+		}
+		catch (Exception e) {
+			log.error("Authentication error: {}", e.getMessage());
+			if (errorInfo.isPresent()) {
+				errorInfo.get().status = IRODSErrorCodes.SYS_LIBRARY_ERROR;
+				errorInfo.get().msg = "Unexpected error";
+			}
+			comm.socket.close();
 			return null;
 		}
-
-		// Capture the server version information.
-		var vers = Network.readObject(comm.sin, mh.msgLen, Version_PI.class);
-		log.debug("Received Version_PI: {}", XmlUtil.toXmlString(vers));
-		comm.apiVersion = vers.apiVersion;
-		comm.relVersion = vers.relVersion;
-		comm.status = vers.status;
-		comm.cookie = vers.cookie;
-
-		// Store the desired hashing algorithm in the RcComm. This is needed
-		// for password obfuscation (if the client wishes to manipulate user's
-		// passwords).
-		comm.hashAlgorithm = connOptions.hashAlgorithm;
-
-		// TODO In the C implementation, this is where the network_plugin
-		// is instantiated and the decision to use TLS happens. That decision
-		// is based on the negotiation results, which are stored in the RcComm.
-		// The RcComm holds information about encryption and other parameters.
-		// That's why messages appear to be encrypted following the version
-		// response from the server.
-		enableTLS(comm, connOptions);
 
 		return comm;
 	}
