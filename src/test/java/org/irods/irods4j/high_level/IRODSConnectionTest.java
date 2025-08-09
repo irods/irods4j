@@ -21,6 +21,7 @@ import org.irods.irods4j.high_level.administration.IRODSZones.ZoneType;
 import org.irods.irods4j.high_level.connection.IRODSConnection;
 import org.irods.irods4j.high_level.connection.QualifiedUsername;
 import org.irods.irods4j.low_level.api.IRODSApi;
+import org.irods.irods4j.low_level.api.IRODSErrorCodes;
 import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.KeyValPair_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.RodsObjStat_PI;
@@ -106,10 +107,6 @@ class IRODSConnectionTest {
 				conn.authenticate(new NativeAuthPlugin(), password);
 				assertTrue(conn.isConnected());
 
-				// TODO Stat is a special operation which apparently doesn't care about
-				// permissions. It returns the type of the referenced logical path regardless of
-				// permissions. May need to create a data object in the admin's home collection.
-				//
 				// Stat the admin's home collection. This will fail due to the test user not
 				// having permission to see the target collection.
 				var input = new DataObjInp_PI();
@@ -117,14 +114,13 @@ class IRODSConnectionTest {
 				input.KeyValPair_PI = new KeyValPair_PI();
 				var output = new Reference<RodsObjStat_PI>();
 				var ec = IRODSApi.rcObjStat(conn.getRcComm(), input, output);
-				log.debug("rcObjStat ec = {}", ec); // TODO Remove this.
-				assertEquals(ec, 2);
+				assertEquals(IRODSErrorCodes.USER_FILE_DOES_NOT_EXIST, ec);
 
 				// Stat the test user's home collection. This will succeed because the test user
 				// has the appropriate permissions for viewing the collection.
 				input.objPath = '/' + String.join("/", zone, "home", testUser.name);
 				ec = IRODSApi.rcObjStat(conn.getRcComm(), input, output);
-				assertEquals(ec, 2);
+				assertEquals(2, ec);
 			} finally {
 				IRODSUsers.removeUser(adminConn.getRcComm(), testUser);
 			}
