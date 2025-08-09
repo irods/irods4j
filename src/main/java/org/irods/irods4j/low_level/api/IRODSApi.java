@@ -626,11 +626,11 @@ public class IRODSApi {
 		}
 	}
 
-	public static void rcAuthenticateClient(RcComm comm, String authScheme, String password) throws Exception {
+	public static void rcAuthenticateClient(RcComm comm, AuthPlugin authPlugin, String password) throws Exception {
 		var input = JsonUtil.getJsonMapper().createObjectNode();
 		input.put("password", password);
 		input.put(AuthPlugin.AUTH_TTL_KEY, "0"); // TODO Expose this option and others.
-		AuthManager.authenticateClient(comm, authScheme, input);
+		AuthManager.authenticateClient(comm, authPlugin, input);
 	}
 
 	public static int rcObjStat(RcComm comm, DataObjInp_PI input, Reference<RodsObjStat_PI> output) throws IOException {
