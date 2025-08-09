@@ -55,6 +55,11 @@ public abstract class AuthPlugin {
 		addOperation(AUTH_CLIENT_START, this::authClientStart);
 	}
 
+	/**
+	 * @return The name of the authentication scheme.
+	 */
+	public abstract String getName();
+
 	protected void addOperation(String opName, AuthPluginOperation op) {
 		operations.put(opName, op);
 	}
