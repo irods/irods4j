@@ -17,9 +17,16 @@ public class PamPasswordAuthPlugin extends AuthPlugin {
 
 	private static final String PERFORM_NATIVE_AUTH = "perform_native_auth";
 
-	public PamPasswordAuthPlugin() {
+	private boolean requireSecureConnection = true;
+
+	public PamPasswordAuthPlugin(boolean requireSecureConnection) {
+		this.requireSecureConnection = requireSecureConnection;
 		addOperation(AUTH_CLIENT_AUTH_REQUEST, this::clientRequest);
 		addOperation(PERFORM_NATIVE_AUTH, this::performNativeAuth);
+	}
+
+	public String getName() {
+		return "pam_password";
 	}
 
 	@Override
@@ -48,8 +55,13 @@ public class PamPasswordAuthPlugin extends AuthPlugin {
 		// Unlike the C++ implementation, this library requires the user to connect
 		// using a secure channel. It is the user's responsibility to make sure the
 		// communication is secure before authenticating via PAM.
-		if (!comm.secure) {
-			throw new IllegalStateException("SSL/TLS is required for PAM authentication");
+		if (requireSecureConnection) {
+			if (!comm.secure) {
+				throw new IllegalStateException("SSL/TLS is required for PAM authentication");
+			}
+		}
+		else if (!comm.secure) {
+			log.warn("Using insecure channel for authentication. Password will be visible on the network.");
 		}
 
 		JsonNode resp = request(comm, req);
@@ -75,7 +87,7 @@ public class PamPasswordAuthPlugin extends AuthPlugin {
 		// password mapped to "request_result".
 		ObjectNode input = JsonUtil.getJsonMapper().createObjectNode();
 		input.put("password", resp.get("request_result").asText());
-		AuthManager.authenticateClient(comm, "native", input);
+		AuthManager.authenticateClient(comm, new NativeAuthPlugin(), input);
 
 		// If everything completed successfully, the flow is complete and we can
 		// consider the user to be logged in. The native auth flow was run and so
