@@ -339,7 +339,7 @@ public class IRODSUsers {
 		input.arg0 = "add";
 		input.arg1 = "user";
 		input.arg2 = name;
-		input.arg3 = toString(currentUserType.get());
+		input.arg3 = toString(userType);
 		input.arg4 = zone;
 
 		int ec = IRODSApi.rcGeneralAdmin(comm, input);
