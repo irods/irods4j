@@ -49,6 +49,9 @@ public class IRODSCollectionIterator implements Iterable<CollectionEntry> {
 	// buffer is used to fetch the next page.
 	private StringBuilder querySb;
 
+	// Aids in deduplication of data objects during iteration.
+	private String lastObjectId = "";
+
 	/**
 	 * Options which affect the behavior of the iterator.
 	 * 
@@ -201,8 +204,14 @@ public class IRODSCollectionIterator implements Iterable<CollectionEntry> {
 		public boolean hasNext() {
 			// We're working with an existing set of rows.
 			if (null != iter.rows) {
-				if (++iter.rowIndex < iter.rows.size()) {
-					return true;
+				// Find the next object, skipping over objects sharing the same object ID.
+				// This loop is primarily for data objects having multiple replicas.
+				while (++iter.rowIndex < iter.rows.size()) {
+					String objectId = iter.rows.get(iter.rowIndex).get(0);
+					if (!iter.lastObjectId.equals(objectId)) {
+						iter.lastObjectId = objectId;
+						return true;
+					}
 				}
 
 				// This is an optimization which avoids an unnecessary network call to the
@@ -227,10 +236,14 @@ public class IRODSCollectionIterator implements Iterable<CollectionEntry> {
 				iter.rowIndex = 0;
 			}
 
+			//
+			// We've iterated over all rows of the current page and need more data.
+			//
+
 			if (!iter.searchForCollections) {
 				iter.querySb.delete(0, iter.querySb.length());
 				iter.querySb.append(
-						"select DATA_ID, DATA_NAME, DATA_SIZE, DATA_CHECKSUM, DATA_MODE, DATA_CREATE_TIME, DATA_MODIFY_TIME where COLL_NAME = '");
+						"select DATA_ID, DATA_NAME, DATA_SIZE, DATA_CHECKSUM, DATA_MODE, DATA_CREATE_TIME, DATA_MODIFY_TIME, DATA_REPL_STATUS where COLL_NAME = '");
 				iter.querySb.append(iter.logicalPath);
 				iter.querySb.append("'");
 
@@ -242,10 +255,10 @@ public class IRODSCollectionIterator implements Iterable<CollectionEntry> {
 					// the ID of the last row within the current set of rows.
 					iter.querySb.append(" and DATA_ID > '");
 					iter.querySb.append(iter.rows.get(iter.rows.size() - 1).get(0));
-					iter.querySb.append("' order by DATA_ID limit ");
+					iter.querySb.append("' order by DATA_ID, DATA_REPL_STATUS desc, DATA_MODIFY_TIME desc limit ");
 					iter.querySb.append(iter.rowsPerPage);
 				} else {
-					iter.querySb.append(" order by DATA_ID limit ");
+					iter.querySb.append(" order by DATA_ID, DATA_REPL_STATUS desc, DATA_MODIFY_TIME desc limit ");
 					iter.querySb.append(iter.rowsPerPage);
 				}
 
@@ -253,6 +266,7 @@ public class IRODSCollectionIterator implements Iterable<CollectionEntry> {
 					iter.rows = IRODSQuery.executeGenQuery2(iter.comm, iter.comm.proxyUserZone,
 							iter.querySb.toString());
 					if (!iter.rows.isEmpty()) {
+						iter.lastObjectId = iter.rows.get(0).get(0);
 						return true;
 					}
 
@@ -289,7 +303,10 @@ public class IRODSCollectionIterator implements Iterable<CollectionEntry> {
 					iter.rows = IRODSQuery.executeGenQuery2(iter.comm, iter.comm.proxyUserZone,
 							iter.querySb.toString());
 					// Terminate because collections are processed after data objects.
-					return !iter.rows.isEmpty();
+					if (!iter.rows.isEmpty()) {
+						iter.lastObjectId = iter.rows.get(0).get(0);
+						return true;
+					}
 				} catch (IOException | IRODSException e) {
 					log.error(e.getMessage());
 				}
