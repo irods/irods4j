@@ -1,22 +1,26 @@
 package org.irods.irods4j.high_level;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
+import org.irods.irods4j.high_level.administration.IRODSResources;
+import org.irods.irods4j.high_level.catalog.IRODSQuery;
 import org.irods.irods4j.high_level.connection.IRODSConnection;
 import org.irods.irods4j.high_level.connection.QualifiedUsername;
+import org.irods.irods4j.high_level.io.IRODSDataObjectOutputStream;
 import org.irods.irods4j.high_level.io.IRODSDataObjectStream;
 import org.irods.irods4j.high_level.vfs.IRODSCollectionIterator;
+import org.irods.irods4j.high_level.vfs.IRODSFilesystem;
+import org.irods.irods4j.high_level.vfs.IRODSReplicas;
 import org.irods.irods4j.low_level.api.IRODSApi;
+import org.irods.irods4j.low_level.api.IRODSException;
 import org.irods.irods4j.low_level.api.IRODSKeywords;
 import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjInp_PI.OpenFlags;
@@ -24,6 +28,8 @@ import org.irods.irods4j.low_level.protocol.packing_instructions.KeyValPair_PI;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class IRODSCollectionIteratorTest {
 
@@ -101,6 +107,70 @@ class IRODSCollectionIteratorTest {
 			input.KeyValPair_PI.keyWord.add(IRODSKeywords.FORCE_FLAG);
 			input.KeyValPair_PI.svalue.add("");
 			assertEquals(IRODSApi.rcDataObjUnlink(conn.getRcComm(), input), 0);
+		}
+	}
+
+	@Test
+	void testCollectionIteratorDoesNotShowMultipleReplicas() throws Exception {
+		var ufs0Resc = "ufs0_resc";
+		var ufs1Resc = "ufs1_resc";
+		var sandbox = '/' + String.join("/", zone, "home", username, "collection_iterators");
+
+		try {
+			// Create two unixfilesystem resources.
+			var rescInfo = new IRODSResources.ResourceRegistrationInfo();
+			rescInfo.hostName = host;
+			rescInfo.resourceName = ufs0Resc;
+			rescInfo.resourceType = IRODSResources.ResourceTypes.UNIXFILESYSTEM;
+			rescInfo.vaultPath = "/tmp/" + ufs0Resc + "_vault";
+			IRODSResources.addResource(conn.getRcComm(), rescInfo);
+
+			rescInfo.resourceName = ufs1Resc;
+			rescInfo.vaultPath = "/tmp/" + ufs1Resc + "_vault";
+			IRODSResources.addResource(conn.getRcComm(), rescInfo);
+
+			// Reconnect to the server so the agent sees the new resources.
+			conn.disconnect();
+			conn.connect(host, port, new QualifiedUsername(username, zone));
+			conn.authenticate(new NativeAuthPlugin(), password);
+
+			// Create multiple data objects and replicate them to the new resources.
+			IRODSFilesystem.createCollection(conn.getRcComm(), sandbox);
+			for (int i = 0; i < 5; ++i) {
+				var logicalPath = sandbox + "/data_object." + i;
+				try (var out = new IRODSDataObjectOutputStream(conn.getRcComm(), logicalPath, true, false)) {
+					out.write(("unique data for data object #" + i).getBytes(StandardCharsets.UTF_8));
+				}
+				IRODSReplicas.replicateReplica(conn.getRcComm(), logicalPath, 0, ufs0Resc);
+				IRODSReplicas.replicateReplica(conn.getRcComm(), logicalPath, 0, ufs1Resc);
+
+				// Show that each data object has three replicas.
+				var query = String.format("select count(DATA_ID) where COLL_NAME = '%s' and DATA_NAME = 'data_object.%d'", sandbox, i);
+				var rows = IRODSQuery.executeGenQuery2(conn.getRcComm(), query);
+				log.debug("Number of replicas for [{}] is [{}].", logicalPath, rows.get(0).get(0));
+				assertEquals(3, Integer.parseInt(rows.get(0).get(0)));
+			}
+
+			// Show that the collection iterator avoids presenting duplicate entries.
+			var seen = new HashSet<String>();
+			for (var e : new IRODSCollectionIterator(conn.getRcComm(), sandbox)) {
+				log.debug("id=[{}], path=[{}]", e.id(), e.path());
+				assertTrue(seen.add(e.id()));
+			}
+		}
+		finally {
+			// Remove all data objects and resources.
+			try {
+				IRODSFilesystem.removeAll(conn.getRcComm(), sandbox, IRODSFilesystem.RemoveOptions.NO_TRASH);
+			} catch (IOException | IRODSException e) {}
+
+			try {
+				IRODSResources.removeResource(conn.getRcComm(), ufs0Resc);
+			} catch (IOException | IRODSException e) {}
+
+			try {
+				IRODSResources.removeResource(conn.getRcComm(), ufs1Resc);
+			} catch (IOException | IRODSException e) {}
 		}
 	}
 
