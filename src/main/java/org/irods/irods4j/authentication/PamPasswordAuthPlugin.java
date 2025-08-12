@@ -52,9 +52,6 @@ public class PamPasswordAuthPlugin extends AuthPlugin {
 		ObjectNode req = (ObjectNode) context.deepCopy();
 		req.put(AUTH_NEXT_OPERATION, AUTH_AGENT_AUTH_REQUEST);
 
-		// Unlike the C++ implementation, this library requires the user to connect
-		// using a secure channel. It is the user's responsibility to make sure the
-		// communication is secure before authenticating via PAM.
 		if (requireSecureConnection) {
 			if (!comm.secure) {
 				throw new IllegalStateException("SSL/TLS is required for PAM authentication");
@@ -93,6 +90,11 @@ public class PamPasswordAuthPlugin extends AuthPlugin {
 		// consider the user to be logged in. The native auth flow was run and so
 		// we trust the result.
 		resp.put(AUTH_NEXT_OPERATION, AUTH_FLOW_COMPLETE);
+
+		// The native auth plugin sets this on success, so this isn't necessary.
+		// We'll set it anyway to align with the C++ implementation, just to be on
+		// the safe side.
+		comm.loggedIn = true;
 
 		return resp;
 	}
