@@ -43,7 +43,7 @@ public class AuthManager {
 			}
 
 			nextOp = resp.get("next_operation").asText();
-			if (nextOp.isEmpty() || "flow_complete".equals(nextOp)) {
+			if (nextOp.isEmpty() || "authentication_flow_complete".equals(nextOp)) {
 				throw new IRODSException(IRODSErrorCodes.CAT_INVALID_AUTHENTICATION, "Authentication flow completed without success");
 			}
 
