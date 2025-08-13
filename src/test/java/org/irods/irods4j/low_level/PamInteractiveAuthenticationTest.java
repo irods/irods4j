@@ -30,7 +30,7 @@ class PamInteractiveAuthenticationTest {
     static int port = 1247;
     static String zone = "tempZone";
     static String username = "john";
-    static String password = "=i;r@o\\\\d&s";
+    static String password = "=i;r@o\\d&s";
     static RcComm comm;
     static boolean requireSecureConnection = true;
 
