@@ -26,7 +26,7 @@ To use it, add the following to your pom.xml file.
 <dependency>
     <groupId>org.irods</groupId>
     <artifactId>irods4j</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 
