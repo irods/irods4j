@@ -11,6 +11,27 @@ and this project **only** adheres to the following _(as defined at [Semantic Ver
 > - MINOR version when you add functionality in a backward compatible manner
 > - PATCH version when you make backward compatible bug fixes
 
+## [0.3.0] - 2025-08-13
+
+This release adds support for the PAM Interactive authentication scheme. It also fixes some compatibility issues with Microsoft Windows.
+
+### Changed
+
+- Require authentication plugin instance be passed to `AuthManager` instead of string (#2).
+
+### Fixed
+
+- Close TCP socket on `rcConnect` failures (#17).
+- Pass correct user type to the server when creating new users (#30).
+- Fix path handling code for Microsoft Windows (#104).
+- Fix `IRODSCollectionIterator` to not show multiple replicas for a data object (#107).
+- Check for correct authentication flow string (#110).
+
+### Added
+
+- Implement support for PAM Interactive authentication scheme (#2).
+- Introduce generic path manipulation library (#104).
+
 ## [0.2.0] - 2025-06-02
 
 This release focuses on making the library compatible with iRODS 5 and fixing various bugs.
