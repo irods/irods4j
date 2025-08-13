@@ -14,7 +14,7 @@ This library provides a low-level API which exposes data types and functions see
 - Minimum use of abstractions
 - Easy to use / Easy to understand
 - Enables patterns supported by the iRODS C/C++ APIs
-- Supports PAM via the `pam_password` authentication scheme
+- Supports PAM via the `pam_password` and `pam_interactive` authentication schemes
 
 ## Maven
 
