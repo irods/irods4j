@@ -1,0 +1,22 @@
+NOTICE
+------
+
+This distribution includes third-party software.
+
+1. JsonPatch
+   Copyright (c) 2012-2023 Francis Galiegue
+   Project URL: https://github.com/java-json-tools/json-patch
+   Licensed under:
+     - GNU Lesser General Public License v3.0 (LGPL 3.0)
+       https://www.gnu.org/licenses/lgpl-3.0.txt
+     - Apache License, Version 2.0
+       https://www.apache.org/licenses/LICENSE-2.0.txt
+
+   This distribution does not modify the JsonPatch library. It is included
+   as an external dependency. End users may replace this library with a
+   modified version in compliance with the above licenses.
+
+2. irods4j
+   Copyright (c) 2025 The University of North Carolina at Chapel Hill
+   Licensed under the BSD 3-Clause License.
+   https://opensource.org/licenses/BSD-3-Clause
