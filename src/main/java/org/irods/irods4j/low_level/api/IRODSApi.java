@@ -179,33 +179,33 @@ public class IRODSApi {
 	}
 
 	private static void sendApiRequest(OutputStream out, int apiNumber, Object data) throws IOException {
-		String msgbody = XmlUtil.toXmlString(data);
+		byte[] msgbody = XmlUtil.toXmlString(data).getBytes(StandardCharsets.UTF_8);
 
 		// Create the header describing the message.
 		MsgHeader_PI mh = new MsgHeader_PI();
 		mh.type = MsgHeader_PI.MsgType.RODS_API_REQ;
 		mh.intInfo = apiNumber;
-		mh.msgLen = msgbody.length();
+		mh.msgLen = msgbody.length;
 
 		// Send request.
 		Network.write(out, mh);
-		Network.writeBytes(out, msgbody.getBytes(StandardCharsets.UTF_8));
+		Network.writeBytes(out, msgbody);
 		out.flush();
 	}
 
 	private static void sendApiRequest(OutputStream out, int apiNumber, Object data, byte[] bytes, int byteCount) throws IOException {
-		String msgbody = XmlUtil.toXmlString(data);
+		byte[] msgbody = XmlUtil.toXmlString(data).getBytes(StandardCharsets.UTF_8);
 
 		// Create the header describing the message.
 		MsgHeader_PI mh = new MsgHeader_PI();
 		mh.type = MsgHeader_PI.MsgType.RODS_API_REQ;
 		mh.intInfo = apiNumber;
-		mh.msgLen = msgbody.length();
+		mh.msgLen = msgbody.length;
 		mh.bsLen = byteCount;
 
 		// Send request.
 		Network.write(out, mh);
-		Network.writeBytes(out, msgbody.getBytes(StandardCharsets.UTF_8));
+		Network.writeBytes(out, msgbody);
 		Network.writeBytes(out, bytes, byteCount);
 		out.flush();
 	}
