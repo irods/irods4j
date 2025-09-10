@@ -77,16 +77,16 @@ public abstract class AuthPlugin {
 		var json = JsonUtil.toJsonString(msg);
 		var bbbuf = new BinBytesBuf_PI();
 		bbbuf.buf = json;
-		bbbuf.buflen = json.length();
-		var msgbody = XmlUtil.toXmlString(bbbuf);
+		bbbuf.buflen = json.getBytes(StandardCharsets.UTF_8).length;
+		var msgbody = XmlUtil.toXmlString(bbbuf).getBytes(StandardCharsets.UTF_8);
 
 		var hdr = new MsgHeader_PI();
 		hdr.type = MsgHeader_PI.MsgType.RODS_API_REQ;
-		hdr.msgLen = msgbody.length();
+		hdr.msgLen = msgbody.length;
 		hdr.intInfo = 110000; // New auth plugin framework API number.
 
 		Network.write(comm.sout, hdr);
-		Network.writeBytes(comm.sout, msgbody.getBytes(StandardCharsets.UTF_8));
+		Network.writeBytes(comm.sout, msgbody);
 		comm.sout.flush();
 
 		// Read the message header from the server.
