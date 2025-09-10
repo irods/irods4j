@@ -1067,7 +1067,7 @@ public class IRODSUsers {
 		plainTextPasswordSb.append(p.value);
 		plainTextPasswordSb.setLength(MAX_PASSWORD_LEN + 10);
 
-		var count = MAX_PASSWORD_LEN - 10 - p.value.length();
+		var count = MAX_PASSWORD_LEN - 10 - p.value.getBytes(StandardCharsets.UTF_8).length;
 		if (count > 15) {
 			// The random sequence of characters is used for padding and must match
 			// what is defined on the server-side.
@@ -1075,10 +1075,10 @@ public class IRODSUsers {
 		}
 
 		var keySb = new StringBuilder();
-		if (p.requesterPassword.length() >= MAX_PASSWORD_LEN) {
+		if (p.requesterPassword.getBytes(StandardCharsets.UTF_8).length >= MAX_PASSWORD_LEN) {
 			throw new IllegalArgumentException("Requester password exceeds max key size: " + MAX_PASSWORD_LEN);
 		}
-		keySb.append(p.requesterPassword.substring(0, Math.min(p.requesterPassword.length(), MAX_PASSWORD_LEN)));
+		keySb.append(p.requesterPassword.substring(0, Math.min(p.requesterPassword.getBytes(StandardCharsets.UTF_8).length, MAX_PASSWORD_LEN)));
 
 		return obfEncodeByKey(plainTextPasswordSb.toString(), keySb.toString(), hashAlgo);
 	}
@@ -1088,13 +1088,13 @@ public class IRODSUsers {
 	private static String obfEncodeByKey(String data, String key, String hashAlgo) throws NoSuchAlgorithmException {
 //		var keyBuf = new int[100 + 1]; // +1 for null terminating byte.
 //		var keyBytes = key.getBytes(StandardCharsets.UTF_8);
-//		var length = Math.min(keyBuf.length - 1, key.length());
+//		var length = Math.min(keyBuf.length - 1, key.getBytes(StandardCharsets.UTF_8).length);
 //		for (int x = 0; x < length; ++x) {
 //			keyBuf[x] = (int) (keyBytes[x] & 0xff);
 //		}
 		var keyBuf = new int[100];
 		var keyBytes = key.getBytes(StandardCharsets.UTF_8);
-		var length = Math.min(keyBuf.length, key.length());
+		var length = Math.min(keyBuf.length, key.getBytes(StandardCharsets.UTF_8).length);
 		for (int x = 0; x < length; ++x) {
 			keyBuf[x] = keyBytes[x] & 0xff;
 		}

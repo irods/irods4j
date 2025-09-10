@@ -22,13 +22,13 @@ public class Network {
 
 		var bbuf = ByteBuffer.allocate(4);
 		bbuf.order(ByteOrder.BIG_ENDIAN);
-		bbuf.putInt(msg.length());
+		bbuf.putInt(msg.getBytes(StandardCharsets.UTF_8).length);
 
 		out.write(bbuf.array());
 		out.write(msg.getBytes());
 
 		if (log.isDebugEnabled()) {
-			log.debug("Wrote {} bytes", msg.length());
+			log.debug("Wrote {} bytes", msg.getBytes(StandardCharsets.UTF_8).length);
 			log.debug("Message:\n{}", msg);
 		}
 	}

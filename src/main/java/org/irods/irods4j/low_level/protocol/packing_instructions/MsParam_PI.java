@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
+import java.nio.charset.StandardCharsets;
+
 @JsonSerialize(using = MsParam_PI_Serializer.class)
 @JsonDeserialize(using = MsParam_PI_Deserializer.class)
 public class MsParam_PI {
@@ -32,7 +34,7 @@ public class MsParam_PI {
 		mp.inOutStruct = inoutstruct;
 		mp.BinBytesBuf_PI = new BinBytesBuf_PI();
 		mp.BinBytesBuf_PI.buf = "testing testing 1 2 3";
-		mp.BinBytesBuf_PI.buflen = mp.BinBytesBuf_PI.buf.length();
+		mp.BinBytesBuf_PI.buflen = mp.BinBytesBuf_PI.buf.getBytes(StandardCharsets.UTF_8).length;
 
 		var xm = new XmlMapper();
 		xm.enable(SerializationFeature.INDENT_OUTPUT);

@@ -351,16 +351,16 @@ public class IRODSApi {
 			sp.proxyUser = comm.proxyUsername = proxyUsername.orElse(clientUsername);
 			sp.proxyRcatZone = comm.proxyUserZone = proxyUserZone.orElse(clientUserZone);
 			sp.option = appName + "request_server_negotiation";
-			var msgbody = XmlUtil.toXmlString(sp);
+			var msgbody = XmlUtil.toXmlString(sp).getBytes(StandardCharsets.UTF_8);
 
 			// Create the header describing the StartupPack message.
 			var hdr = new MsgHeader_PI();
 			hdr.type = MsgHeader_PI.MsgType.RODS_CONNECT;
-			hdr.msgLen = msgbody.length();
+			hdr.msgLen = msgbody.length;
 
 			// Send the message header and StartupPack (i.e. the message body).
 			Network.write(comm.sout, hdr);
-			Network.writeBytes(comm.sout, msgbody.getBytes(StandardCharsets.UTF_8));
+			Network.writeBytes(comm.sout, msgbody);
 			comm.sout.flush();
 
 			// Read the message header from the server.
@@ -400,11 +400,11 @@ public class IRODSApi {
 
 			csneg = clientServerNegotiation(comm, connOptions.clientServerNegotiation, csneg.result);
 
-			msgbody = XmlUtil.toXmlString(csneg);
+			msgbody = XmlUtil.toXmlString(csneg).getBytes(StandardCharsets.UTF_8);
 			hdr.type = MsgHeader_PI.MsgType.RODS_CS_NEG_T;
-			hdr.msgLen = msgbody.length();
+			hdr.msgLen = msgbody.length;
 			Network.write(comm.sout, hdr);
-			Network.writeBytes(comm.sout, msgbody.getBytes(StandardCharsets.UTF_8));
+			Network.writeBytes(comm.sout, msgbody);
 			comm.sout.flush();
 
 			// Read the message header from the server.
@@ -578,16 +578,16 @@ public class IRODSApi {
 		var bbuf = new BytesBuf_PI();
 		bbuf.buflen = key.length;
 		bbuf.buf = key;
-		var msgbody = XmlUtil.toXmlString(bbuf);
+		var msgbody = XmlUtil.toXmlString(bbuf).getBytes(StandardCharsets.UTF_8);
 
 		mh.type = "SHARED_SECRET";
-		mh.msgLen = msgbody.length();
+		mh.msgLen = msgbody.length;
 		mh.errorLen = 0;
 		mh.bsLen = 0;
 		mh.intInfo = 0;
 
 		Network.write(sout, mh);
-		Network.writeBytes(sout, msgbody.getBytes(StandardCharsets.UTF_8));
+		Network.writeBytes(sout, msgbody);
 		sout.flush();
 
 		// TODO Do equivalent of sslPostConnectionCheck().
@@ -712,7 +712,7 @@ public class IRODSApi {
 	public static int rcReplicaClose(RcComm comm, String closeOptions) throws IOException {
 		var input = new BinBytesBuf_PI();
 		input.buf = closeOptions;
-		input.buflen = closeOptions.length();
+		input.buflen = closeOptions.getBytes(StandardCharsets.UTF_8).length;
 		sendApiRequest(comm.sout, 20004, input);
 		return receiveServerResponse(comm, null, null, null);
 	}
@@ -721,7 +721,7 @@ public class IRODSApi {
 			throws IOException {
 		var bbbuf = new BinBytesBuf_PI();
 		bbbuf.buf = input;
-		bbbuf.buflen = input.length();
+		bbbuf.buflen = input.getBytes(StandardCharsets.UTF_8).length;
 		sendApiRequest(comm.sout, 20002, bbbuf);
 
 		var outputPI = new Reference<BinBytesBuf_PI>();
@@ -737,7 +737,7 @@ public class IRODSApi {
 			throws IOException {
 		var bbbuf = new BinBytesBuf_PI();
 		bbbuf.buf = input;
-		bbbuf.buflen = input.length();
+		bbbuf.buflen = input.getBytes(StandardCharsets.UTF_8).length;
 		sendApiRequest(comm.sout, 20005, bbbuf);
 
 		var outputPI = new Reference<BinBytesBuf_PI>();
@@ -752,7 +752,7 @@ public class IRODSApi {
 	public static int rcTouch(RcComm comm, String input) throws IOException {
 		var bbbuf = new BinBytesBuf_PI();
 		bbbuf.buf = input;
-		bbbuf.buflen = input.length();
+		bbbuf.buflen = input.getBytes(StandardCharsets.UTF_8).length;
 		sendApiRequest(comm.sout, 20007, bbbuf);
 		return receiveServerResponse(comm, null, null, null);
 	}
@@ -790,7 +790,7 @@ public class IRODSApi {
 	public static int rcGetFileDescriptorInfo(RcComm comm, String input, Reference<String> output) throws IOException {
 		var bbbuf = new BinBytesBuf_PI();
 		bbbuf.buf = input;
-		bbbuf.buflen = input.length();
+		bbbuf.buflen = input.getBytes(StandardCharsets.UTF_8).length;
 		sendApiRequest(comm.sout, 20000, bbbuf);
 
 		var outputPI = new Reference<BinBytesBuf_PI>();
