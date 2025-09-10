@@ -1,6 +1,7 @@
 package org.irods.irods4j.high_level.vfs;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
@@ -1079,7 +1080,7 @@ public class IRODSFilesystem {
 		//
 		// The true max path length is MAX_NAME_LEN - 1, to accomodate space for the
 		// null-terminating byte.
-		if (path.length() > 1087) {
+		if (path.getBytes(StandardCharsets.UTF_8).length > 1087) {
 			throw new IRODSFilesystemException(IRODSErrorCodes.USER_PATH_EXCEEDS_MAX, "Path exceeds maximum length",
 					path);
 		}

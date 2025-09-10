@@ -131,17 +131,19 @@ public class NativeAuthPlugin extends AuthPlugin {
 
 	private static String generateSessionSignature(String buffer) {
 		final int requiredSize = 16;
+		final byte[] byteBuffer = buffer.getBytes(StandardCharsets.UTF_8);
 
-		if (buffer.length() < requiredSize) {
+		if (byteBuffer.length < requiredSize) {
 			throw new IllegalArgumentException("Buffer must be at least 16 bytes long");
 		}
 
 		StringBuilder sigSb = new StringBuilder();
-		for (byte ch : buffer.getBytes(StandardCharsets.UTF_8)) {
+		for (byte ch : byteBuffer) {
 			sigSb.append(String.format("%02x", ch));
 		}
 
-		if (sigSb.length() != (2 * requiredSize)) {
+		String sig = sigSb.toString();
+		if (sig.getBytes(StandardCharsets.UTF_8).length != (2 * requiredSize)) {
 			throw new IllegalStateException("Session signature is not 32 bytes in length");
 		}
 
