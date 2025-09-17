@@ -11,6 +11,14 @@ and this project **only** adheres to the following _(as defined at [Semantic Ver
 > - MINOR version when you add functionality in a backward compatible manner
 > - PATCH version when you make backward compatible bug fixes
 
+## [0.4.0] - 2025-09-17
+
+This is a patch release. No changes have been made to the public API.
+
+### Fixed
+
+- Fix support for strings containing multibyte characters (#120).
+
 ## [0.3.0] - 2025-08-13
 
 This release adds support for the PAM Interactive authentication scheme. It also fixes some compatibility issues with Microsoft Windows.
