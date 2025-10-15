@@ -27,12 +27,16 @@ public class AuthManager {
 		var mutableReq = (ObjectNode) req;
 		mutableReq.put("scheme", authPlugin.getName());
 		mutableReq.put("next_operation", nextOp);
-		
-		log.debug("Initial context = {}", JsonUtil.toJsonString(req));
+
+		if (log.isTraceEnabled()) {
+			log.trace("Initial context = {}", JsonUtil.toJsonString(req));
+		}
 
 		while (true) {
 			JsonNode resp = authPlugin.execute(comm, nextOp, req);
-			log.debug("Server response = {}", JsonUtil.toJsonString(resp));
+			if (log.isTraceEnabled()) {
+				log.trace("Server response = {}", JsonUtil.toJsonString(resp));
+			}
 
 			if (comm.loggedIn) {
 				break;
