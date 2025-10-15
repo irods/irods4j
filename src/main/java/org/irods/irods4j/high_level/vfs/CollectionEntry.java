@@ -114,16 +114,15 @@ public class CollectionEntry implements Comparable<CollectionEntry> {
 		return dataId;
 	}
 
-//	/**
-//	 * Returns the checksum of the filesystem object.
-//	 * 
-//	 * @since 0.1.0
-//	 */
-//	public String checksum() {
-//		// TODO This is a questionable function. Should probably remove it.
-//		return checksum;
-//	}
-//
+	/**
+	 * Returns the checksum of the filesystem object.
+	 *
+	 * @since 0.5.0
+	 */
+	public String checksum() {
+		return checksum;
+	}
+
 //	/**
 //	 * 
 //	 * 
