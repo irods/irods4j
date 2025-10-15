@@ -78,11 +78,8 @@ public class CollectionEntry implements Comparable<CollectionEntry> {
 	}
 
 	/**
-	 * Returns the epoch seconds representing the last modification time of the
-	 * filesystem object.
-	 * 
-	 * Changes to the modification time following this operation will not be
-	 * reflected by this method.
+	 * Returns the epoch seconds representing the time the filesystem object was
+	 * last modified.
 	 * 
 	 * @since 0.1.0
 	 */
