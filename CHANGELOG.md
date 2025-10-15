@@ -11,6 +11,15 @@ and this project **only** adheres to the following _(as defined at [Semantic Ver
 > - MINOR version when you add functionality in a backward compatible manner
 > - PATCH version when you make backward compatible bug fixes
 
+## [0.5.0] - 2025-10-15
+
+This release makes it so that users can retrieve the checksum of a data object while iterating over a collection.
+
+### Changed
+
+- Tweak log level needed to view authentication messages (#24).
+- Expose checksum through `CollectionEntry` class (#126).
+
 ## [0.4.0] - 2025-09-17
 
 This is a patch release. No changes have been made to the public API.
