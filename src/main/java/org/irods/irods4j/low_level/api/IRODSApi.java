@@ -13,10 +13,7 @@ import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.Optional;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.*;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
@@ -77,11 +74,11 @@ import org.irods.irods4j.low_level.protocol.packing_instructions.Version_PI;
 
 /**
  * A low-level class providing functions mirroring the iRODS C API.
- * 
+ * <p>
  * All public API functions share identical names with the C API. Users should
  * prefer the abstractions provided by the high_level package in production
  * code. Use of the functions provided by this class should be a last resort.
- * 
+ *
  * @since 0.1.0
  */
 public class IRODSApi {
@@ -92,11 +89,11 @@ public class IRODSApi {
 
 	/**
 	 * The iRODS connection object which enables communication with an iRODS server.
-	 * 
+	 * <p>
 	 * Users of the library are allowed to read the contents of this class. While
 	 * the properties of this structure can be modified, doing so is highly
 	 * discouraged.
-	 * 
+	 *
 	 * @since 0.1.0
 	 */
 	public static class RcComm {
@@ -131,9 +128,9 @@ public class IRODSApi {
 
 	/**
 	 * A class acting as a reference to a byte array.
-	 * 
+	 * <p>
 	 * The byte array holds byte[] instead of Byte[].
-	 * 
+	 *
 	 * @since 0.1.0
 	 */
 	public static class ByteArrayReference {
@@ -142,17 +139,16 @@ public class IRODSApi {
 
 	/**
 	 * Sets the global application name identifying the client to the iRODS server.
-	 * 
+	 * <p>
 	 * This function is designed to be called only once. Attempting to call it more
 	 * than one time will result in an exception. All connections made to the iRODS
 	 * server will share the name set by this function.
-	 * 
+	 * <p>
 	 * Users of this library should call this function before establishing any
 	 * connections to an iRODS server.
-	 * 
+	 *
 	 * @param name The name used by the iRODS server to identify the client
 	 *             application.
-	 * 
 	 * @since 0.1.0
 	 */
 	public static void setApplicationName(String name) {
@@ -211,8 +207,8 @@ public class IRODSApi {
 	}
 
 	private static <T> int receiveServerResponse(RcComm comm, Class<T> targetClass, Reference<T> output,
-			ByteArrayReference bsBuffer) throws IOException {
-		MsgHeader_PI mh = Network.readMsgHeader_PI(comm.sin);
+												 ByteArrayReference bsBuffer) throws IOException {
+		MsgHeader_PI  mh = Network.readMsgHeader_PI(comm.sin);
 
 		if (mh.msgLen > 0 && null != targetClass) {
 			output.value = Network.readObject(comm.sin, mh.msgLen, targetClass);
@@ -231,7 +227,7 @@ public class IRODSApi {
 
 	/**
 	 * A class which enables users to configure various connection options.
-	 * 
+	 *
 	 * @since 0.1.0
 	 */
 	public static final class ConnectionOptions {
@@ -239,7 +235,9 @@ public class IRODSApi {
 
 		public String sslTruststore;
 		public String sslTruststorePassword;
-		public String sslProtocol;
+		public String sslProtocol = "TLS";
+
+		public TrustManager[] trustManagers;
 
 		public String encryptionAlgorithm = "AES-256-CBC";
 		public int encryptionKeySize = 32;
@@ -259,6 +257,11 @@ public class IRODSApi {
 		public int ppLatency = 0;
 		public int ppBandwidth = 0;
 
+		/**
+		 * Returns a shallow copy of the object.
+		 *
+		 * @since 0.1.0
+		 */
 		public ConnectionOptions copy() {
 			ConnectionOptions copy = new ConnectionOptions();
 
@@ -267,6 +270,8 @@ public class IRODSApi {
 			copy.sslTruststore = sslTruststore;
 			copy.sslTruststorePassword = sslTruststorePassword;
 			copy.sslProtocol = sslProtocol;
+
+			copy.trustManagers = trustManagers;
 
 			copy.encryptionAlgorithm = encryptionAlgorithm;
 			copy.encryptionKeySize = encryptionKeySize;
@@ -291,8 +296,8 @@ public class IRODSApi {
 	}
 
 	public static RcComm rcConnect(String host, int port, String clientUsername, String clientUserZone,
-			Optional<String> proxyUsername, Optional<String> proxyUserZone, Optional<ConnectionOptions> options,
-			Optional<RErrMsg_PI> errorInfo) throws Exception {
+								   Optional<String> proxyUsername, Optional<String> proxyUserZone, Optional<ConnectionOptions> options,
+								   Optional<RErrMsg_PI> errorInfo) throws Exception {
 		if (null == host || host.isEmpty()) {
 			throw new IllegalArgumentException("Host is null or empty");
 		}
@@ -441,8 +446,7 @@ public class IRODSApi {
 			// That's why messages appear to be encrypted following the version
 			// response from the server.
 			enableTLS(comm, connOptions);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Authentication error: {}", e.getMessage());
 			if (errorInfo.isPresent()) {
 				errorInfo.get().status = IRODSErrorCodes.SYS_LIBRARY_ERROR;
@@ -507,56 +511,39 @@ public class IRODSApi {
 			return;
 		}
 
-		// This block is for loading self-signed certificates.
-		if (null != options.sslTruststore) {
-			log.debug("Loading Truststore.");
-			KeyStore trustStore = KeyStore.getInstance("JKS");
+		TrustManager[] trustManagers = options.trustManagers;
+		if (null == trustManagers && null != options.sslTruststore) {
+			log.debug("Initializing Truststore.");
 
-			if (null != options.sslTruststorePassword) {
-				try (FileInputStream fis = new FileInputStream(options.sslTruststore)) {
-					trustStore.load(fis, options.sslTruststorePassword.toCharArray());
-				}
+			KeyStore trustStore = KeyStore.getInstance("JKS");
+			try (FileInputStream fis = new FileInputStream(options.sslTruststore)) {
+				String pw = options.sslTruststorePassword;
+				trustStore.load(fis, (pw != null) ? pw.toCharArray() : null);
 			}
 
-			log.debug("Initializing Truststore.");
 			TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 			tmf.init(trustStore);
-
-			log.debug("Initializing SSL context.");
-			SSLContext sslContext = null;
-			if (null == options.sslProtocol) {
-				sslContext = SSLContext.getDefault();
-			} else {
-				sslContext = SSLContext.getInstance(options.sslProtocol);
-				sslContext.init(null, tmf.getTrustManagers(), null);
-			}
-
-			// Create SSLSocket and connect.
-			log.debug("Securing socket communication.");
-			SSLSocketFactory factory = sslContext.getSocketFactory();
-			String host = comm.socket.getInetAddress().getHostAddress();
-			int port = comm.socket.getPort();
-			boolean autoCloseUnderlyingSocket = true;
-			comm.sslSocket = (SSLSocket) factory.createSocket(comm.socket, host, port, autoCloseUnderlyingSocket);
-			for (String p : comm.sslSocket.getSupportedProtocols()) {
-				log.debug("Supported TLS protocol: {}", p);
-			}
-			for (String p : comm.sslSocket.getEnabledProtocols()) {
-				log.debug("Enabled TLS protocol: {}", p);
-			}
-			comm.sslSocket.startHandshake();
-			log.debug("Connection secured!");
-		} else {
-			// Handle certificates which live in the normal OS directories.
-			log.debug("Securing socket communication.");
-			SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-			String host = comm.socket.getInetAddress().getHostAddress();
-			int port = comm.socket.getPort();
-			boolean autoCloseUnderlyingSocket = true;
-			comm.sslSocket = (SSLSocket) factory.createSocket(comm.socket, host, port, autoCloseUnderlyingSocket);
-			comm.sslSocket.startHandshake();
-			log.debug("Connection secured!");
+			trustManagers = tmf.getTrustManagers();
 		}
+
+		log.debug("Initializing SSL context.");
+		SSLContext sslContext = SSLContext.getInstance(options.sslProtocol);
+		sslContext.init(null, trustManagers, new SecureRandom());
+		SSLSocketFactory factory = sslContext.getSocketFactory();
+
+		log.debug("Securing socket communication.");
+		String host = comm.socket.getInetAddress().getHostAddress();
+		int port = comm.socket.getPort();
+		boolean autoCloseUnderlyingSocket = true;
+		comm.sslSocket = (SSLSocket) factory.createSocket(comm.socket, host, port, autoCloseUnderlyingSocket);
+		for (String p : comm.sslSocket.getSupportedProtocols()) {
+			log.debug("Supported TLS protocol: {}", p);
+		}
+		for (String p : comm.sslSocket.getEnabledProtocols()) {
+			log.debug("Enabled TLS protocol: {}", p);
+		}
+		comm.sslSocket.startHandshake();
+		log.debug("Connection secured!");
 
 		// See ssl.cpp in irods/irods to understand the following sequence of
 		// operations. The code below follows ssl_client_start() and ssl_agent_start().
@@ -639,8 +626,7 @@ public class IRODSApi {
 		comm.sout.flush();
 		if (comm.secure) {
 			comm.sslSocket.close();
-		}
-		else {
+		} else {
 			comm.socket.close();
 		}
 	}
@@ -759,7 +745,7 @@ public class IRODSApi {
 	}
 
 	public static int rcGetGridConfigurationValue(RcComm comm, GridConfigurationInp_PI input,
-			Reference<GridConfigurationOut_PI> output) throws IOException {
+												  Reference<GridConfigurationOut_PI> output) throws IOException {
 		sendApiRequest(comm.sout, 20009, input);
 		return receiveServerResponse(comm, GridConfigurationOut_PI.class, output, null);
 	}
