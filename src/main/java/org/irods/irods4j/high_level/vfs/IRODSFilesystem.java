@@ -1159,7 +1159,7 @@ public class IRODSFilesystem {
 			// First, get the user id and permissions on the data object.
 			var map = new HashMap<String, String>();
 			var query = String.format(
-					"select DATA_ACCESS_USER_ID, DATA_ACCESS_PERM_NAME where COLL_NAME = '%s' and DATA_NAME = '%s'",
+					"select DATA_ACCESS_USER_ID, DATA_ACCESS_PERM_NAME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_ACCESS_USER_ID is not null limit 10000",
 					LogicalPath.parentPath(path), LogicalPath.objectName(path));
 			var rows = zone.isPresent()
 				? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
@@ -1173,7 +1173,7 @@ public class IRODSFilesystem {
 			}
 
 			// Now, retrieve the user information using the user id of each user.
-			query = String.format("select USER_ID, USER_NAME, USER_ZONE, USER_TYPE where USER_ID in ('%s')",
+			query = String.format("select USER_ID, USER_NAME, USER_ZONE, USER_TYPE where USER_ID in ('%s') limit 10000",
 					String.join("', '", map.keySet()));
 			log.debug("Query for data object permissions = [{}]", query);
 			rows = zone.isPresent()
