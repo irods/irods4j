@@ -1,0 +1,45 @@
+name: run-tests
+
+on: [push, pull_request]
+
+jobs:
+  run_tests:
+    name: "Testing (no TLS/PAM) - iRODS ${{ matrix.irods_version }}"
+    strategy:
+      matrix:
+        irods_version: ['4.3.2', '4.3.4', '5.0.0', '5.0.2']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v1
+
+      - name: Launch iRODS server
+        run: |
+          irods_version=${{ matrix.irods_version }}
+          compose_file=docker-compose.irods${irods_version:0:1}.yml
+          cd src/test/resources/docker
+          docker compose -f ${compose_file} build --build-arg 'irods_version=${{ matrix.irods_version }}'
+          # --wait causes this step to wait for services to be running/healthy.
+          # --wait-timeout is used to limit the wait time for all services to be running/healthy.
+          docker compose -f ${compose_file} up -d --wait --wait-timeout 60
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: maven
+
+      - name: Run Tests
+        run: mvn test
+
+      - name: Stop Docker Compose services
+        if: always()
+        run: |
+          irods_version=${{ matrix.irods_version }}
+          compose_file=docker-compose.irods${irods_version:0:1}.yml
+          cd src/test/resources/docker
+          docker compose -f ${compose_file} down

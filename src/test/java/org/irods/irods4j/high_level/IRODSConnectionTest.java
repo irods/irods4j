@@ -5,7 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -22,12 +31,16 @@ import org.irods.irods4j.high_level.connection.IRODSConnection;
 import org.irods.irods4j.high_level.connection.QualifiedUsername;
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.api.IRODSErrorCodes;
+import org.irods.irods4j.low_level.api.IRODSException;
 import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.KeyValPair_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.RodsObjStat_PI;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 class IRODSConnectionTest {
 
@@ -125,6 +138,143 @@ class IRODSConnectionTest {
 			} finally {
 				IRODSUsers.removeUser(adminConn.getRcComm(), testUser);
 			}
+		}
+	}
+
+	@Test
+	void testTlsWithTrustManagerWhichTrustsAllCertificates() throws Exception {
+		final String runTest = System.getProperty("irods.test.tls.enable");
+		assumeTrue("1".equals(runTest), "Requires a TLS-enabled iRODS server");
+
+		final IRODSApi.ConnectionOptions connOptions = new IRODSApi.ConnectionOptions();
+		connOptions.clientServerNegotiation = "CS_NEG_REQUIRE";
+
+		// This TrustManager makes it so that all certificates are trusted by the client.
+		// DO NOT use this configuration in a production environment. It is only meant for
+		// testing purposes.
+		connOptions.trustManagers = new TrustManager[]{new X509TrustManager() {
+			@Override
+			public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+			}
+
+			@Override
+			public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+			}
+
+			@Override
+			public X509Certificate[] getAcceptedIssuers() {
+				return new X509Certificate[0];
+			}
+		}};
+
+		try (IRODSConnection conn = new IRODSConnection(connOptions)) {
+			conn.connect(host, port, new QualifiedUsername(username, zone));
+			conn.authenticate(new NativeAuthPlugin(), password);
+			assertTrue(conn.isConnected());
+		}
+	}
+
+	@Test
+	void testTlsWithSelfSignedCertificate() throws Exception {
+		final String runTest = System.getProperty("irods.test.tls.enable");
+		assumeTrue("1".equals(runTest), "Requires a TLS-enabled iRODS server");
+
+		final X509Certificate tlsCert = loadPemCert(Paths.get("src/test/resources/docker/tls_certs/irods_server.crt"));
+
+		final IRODSApi.ConnectionOptions connOptions = new IRODSApi.ConnectionOptions();
+		connOptions.clientServerNegotiation = "CS_NEG_REQUIRE";
+		connOptions.trustManagers = new TrustManager[]{new X509TrustManager() {
+			@Override
+			public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+			}
+
+			@Override
+			public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+				for (X509Certificate cert : chain) {
+					if (cert.equals(tlsCert)) {
+						return;
+					}
+				}
+				throw new CertificateException("Server certificate not trusted.");
+			}
+
+			@Override
+			public X509Certificate[] getAcceptedIssuers() {
+				return new X509Certificate[0];
+			}
+		}};
+
+		try (IRODSConnection conn = new IRODSConnection(connOptions)) {
+			conn.connect(host, port, new QualifiedUsername(username, zone));
+		}
+	}
+
+	@Test
+	void testTlsFailsOnMismatchCertificateInfo() throws Exception {
+		final String runTest = System.getProperty("irods.test.tls.enable");
+		assumeTrue("1".equals(runTest), "Requires a TLS-enabled iRODS server");
+
+		final IRODSApi.ConnectionOptions connOptions = new IRODSApi.ConnectionOptions();
+		connOptions.clientServerNegotiation = "CS_NEG_REQUIRE";
+		connOptions.trustManagers = new TrustManager[]{new X509TrustManager() {
+			@Override
+			public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+			}
+
+			@Override
+			public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+				throw new CertificateException("Server certificate not trusted.");
+			}
+
+			@Override
+			public X509Certificate[] getAcceptedIssuers() {
+				return new X509Certificate[0];
+			}
+		}};
+
+		try (IRODSConnection conn = new IRODSConnection(connOptions)) {
+			IRODSException ex = assertThrows(IRODSException.class, () -> conn.connect(host, port, new QualifiedUsername(username, zone)));
+			assertEquals(IRODSErrorCodes.SYS_LIBRARY_ERROR, ex.getErrorCode());
+		}
+	}
+
+	@Test
+	void testTlsWithJksFile() throws Exception {
+		final String runTest = System.getProperty("irods.test.tls.enable");
+		assumeTrue("1".equals(runTest), "Requires a TLS-enabled iRODS server");
+
+		final IRODSApi.ConnectionOptions connOptions = new IRODSApi.ConnectionOptions();
+		connOptions.clientServerNegotiation = "CS_NEG_REQUIRE";
+		connOptions.sslProtocol = "TLSv1.2";
+		connOptions.sslTruststore = "src/test/resources/docker/tls_certs/truststore.jks";
+		connOptions.sslTruststorePassword = "changeit";
+
+		try (IRODSConnection conn = new IRODSConnection(connOptions)) {
+			conn.connect(host, port, new QualifiedUsername(username, zone));
+		}
+	}
+
+	@Test
+	void testTlsWithJksFileAndIncorrectPassword() throws Exception {
+		final String runTest = System.getProperty("irods.test.tls.enable");
+		assumeTrue("1".equals(runTest), "Requires a TLS-enabled iRODS server");
+
+		final IRODSApi.ConnectionOptions connOptions = new IRODSApi.ConnectionOptions();
+		connOptions.clientServerNegotiation = "CS_NEG_REQUIRE";
+		connOptions.sslProtocol = "TLSv1.2";
+		connOptions.sslTruststore = "src/test/resources/docker/tls_certs/truststore.jks";
+		connOptions.sslTruststorePassword = "incorrect";
+
+		try (IRODSConnection conn = new IRODSConnection(connOptions)) {
+			IRODSException ex = assertThrows(IRODSException.class, () -> conn.connect(host, port, new QualifiedUsername(username, zone)));
+			assertEquals(IRODSErrorCodes.SYS_LIBRARY_ERROR, ex.getErrorCode());
+		}
+	}
+
+	private static X509Certificate loadPemCert(Path pemPath) throws IOException, CertificateException {
+		try (InputStream fis = Files.newInputStream(pemPath)) {
+			final CertificateFactory cf = CertificateFactory.getInstance("X.509");
+			return (X509Certificate) cf.generateCertificate(fis);
 		}
 	}
 

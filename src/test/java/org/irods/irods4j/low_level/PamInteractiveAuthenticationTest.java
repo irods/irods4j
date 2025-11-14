@@ -8,15 +8,16 @@ import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.connection.IRODSConnection;
 import org.irods.irods4j.high_level.connection.QualifiedUsername;
 import org.irods.irods4j.low_level.api.IRODSApi;
-import org.irods.irods4j.low_level.api.IRODSApi.ConnectionOptions;
-import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.api.IRODSErrorCodes;
 import org.irods.irods4j.low_level.api.IRODSException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,7 +32,6 @@ class PamInteractiveAuthenticationTest {
     static String zone = "tempZone";
     static String username = "john";
     static String password = "=i;r@o\\d&s";
-    static RcComm comm;
     static boolean requireSecureConnection = true;
 
     @BeforeAll
@@ -39,29 +39,42 @@ class PamInteractiveAuthenticationTest {
         XmlUtil.enablePrettyPrinting();
         JsonUtil.enablePrettyPrinting();
 
-        ConnectionOptions options = new ConnectionOptions();
+//      ConnectionOptions options = new ConnectionOptions();
 //		options.clientServerNegotiation = "CS_NEG_REQUIRE";
 //		options.sslProtocol = "TLSv1.2";
 //		options.sslTruststore = "/home/kory/eclipse-workspace/irods4j/truststore.jks";
 //		options.sslTruststorePassword = "changeit";
-        comm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.of(options),
-                Optional.empty());
-        assertNotNull(comm);
     }
 
     @AfterAll
     static void tearDownAfterClass() throws Exception {
-        IRODSApi.rcDisconnect(comm);
-
         XmlUtil.disablePrettyPrinting();
         JsonUtil.disablePrettyPrinting();
     }
 
     @Test
     void testPamInteractiveAuthentication() throws Exception {
-        assumeTrue(false, "Disabled until there are config options for working with a PAM-enabled server");
+        final String runTest = System.getProperty("irods.test.pam_interactive.enable");
+        assumeTrue("1".equals(runTest), "Requires a PAM-enabled iRODS server");
 
-        try (IRODSConnection conn = new IRODSConnection()) {
+        final IRODSApi.ConnectionOptions connOptions = new IRODSApi.ConnectionOptions();
+        connOptions.clientServerNegotiation = "CS_NEG_REQUIRE";
+        connOptions.trustManagers = new TrustManager[]{new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        }};
+
+        try (IRODSConnection conn = new IRODSConnection(connOptions)) {
             Function<String, String> getInput = prompt -> {
                 log.debug("PROMPT (ECHO ON): {}", prompt);
                 return "";
@@ -87,9 +100,27 @@ class PamInteractiveAuthenticationTest {
 
     @Test
     void testIncorrectPasswordResultsInError() throws Exception {
-        assumeTrue(false, "Disabled until there are config options for working with a PAM-enabled server");
+        final String runTest = System.getProperty("irods.test.pam_interactive.enable");
+        assumeTrue("1".equals(runTest), "Requires a PAM-enabled iRODS server");
 
-        try (IRODSConnection conn = new IRODSConnection()) {
+        final IRODSApi.ConnectionOptions connOptions = new IRODSApi.ConnectionOptions();
+        connOptions.clientServerNegotiation = "CS_NEG_REQUIRE";
+        connOptions.trustManagers = new TrustManager[]{new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        }};
+
+        try (IRODSConnection conn = new IRODSConnection(connOptions)) {
             Function<String, String> getInput = prompt -> {
                 log.debug("PROMPT (ECHO ON): {}", prompt);
                 return "";

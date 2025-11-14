@@ -1,0 +1,74 @@
+name: run-tests-tls
+
+on: [push, pull_request]
+
+jobs:
+  run_tests:
+    name: "Testing (TLS) - iRODS 5"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v1
+
+      - name: Create TLS certificates
+        run: |
+          # Create the certificates directory in the directory which holds the docker compose
+          # YAML files. This is required due to the use of relative paths in the YAML file.
+          tls_certs_dir=src/test/resources/docker/tls_certs
+          mkdir ${tls_certs_dir}
+          cd ${tls_certs_dir}
+
+          key_file=irods_server.key
+          openssl genrsa -out ${key_file} 2048
+          openssl req -batch -new -x509 -key ${key_file} -out irods_server.crt -days 1
+          openssl dhparam -2 -out irods_dhparams.pem 2048
+          
+          test_password=changeit
+          openssl pkcs12 \
+            -export \
+            -in irods_server.crt \
+            -inkey irods_server.key \
+            -out cert.p12 \
+            -name "certificate" \
+            -password pass:${test_password}
+          keytool \
+            -importkeystore \
+            -srckeystore cert.p12 \
+            -srcstoretype pkcs12 \
+            -srcstorepass ${test_password} \
+            -destkeystore truststore.jks \
+            -deststorepass ${test_password} \
+            -destkeypass ${test_password} \
+            -noprompt
+
+      - name: Launch iRODS server
+        run: |
+          cd src/test/resources/docker
+          # --wait causes this step to wait for services to be running/healthy.
+          # --wait-timeout is used to limit the wait time for all services to be running/healthy.
+          docker compose -f docker-compose.tls.yml up -d --wait --wait-timeout 60
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: maven
+
+      - name: Run Tests
+        run: |
+          test_list=IRODSConnectionTest#testTlsWithTrustManagerWhichTrustsAllCertificates
+          test_list="${test_list},IRODSConnectionTest#testTlsWithSelfSignedCertificate"
+          test_list="${test_list},IRODSConnectionTest#testTlsFailsOnMismatchCertificateInfo"
+          test_list="${test_list},IRODSConnectionTest#testTlsWithJksFile"
+          test_list="${test_list},IRODSConnectionTest#testTlsWithJksFileAndIncorrectPassword"
+          mvn test -Dirods.test.tls.enable=1 -Dtest=${test_list}
+
+      - name: Stop Docker Compose services
+        if: always()
+        run: |
+          cd src/test/resources/docker
+          docker compose -f docker-compose.tls.yml down
