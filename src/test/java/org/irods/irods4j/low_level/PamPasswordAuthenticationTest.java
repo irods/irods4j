@@ -10,6 +10,8 @@ import java.util.Optional;
 import org.irods.irods4j.authentication.PamPasswordAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
+import org.irods.irods4j.high_level.connection.IRODSConnection;
+import org.irods.irods4j.high_level.connection.QualifiedUsername;
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.junit.jupiter.api.AfterAll;
@@ -32,6 +34,18 @@ class PamPasswordAuthenticationTest {
 	static void setUpBeforeClass() throws Exception {
 		XmlUtil.enablePrettyPrinting();
 		JsonUtil.enablePrettyPrinting();
+	}
+
+	@AfterAll
+	static void tearDownAfterClass() throws Exception {
+		JsonUtil.disablePrettyPrinting();
+		XmlUtil.disablePrettyPrinting();
+	}
+
+	@Test
+	void testPamPasswordAuthentication() throws Exception {
+		final var runTest = System.getProperty("irods.test.pam_password.enable");
+		assumeTrue("1".equals(runTest), "Requires a PAM-enabled iRODS server");
 
 		var options = new IRODSApi.ConnectionOptions();
 		options.clientServerNegotiation = "CS_NEG_REQUIRE";
@@ -50,27 +64,10 @@ class PamPasswordAuthenticationTest {
 			}
 		}};
 
-//		var options = new ConnectionOptions();
-//		options.clientServerNegotiation = "CS_NEG_REQUIRE";
-//		options.sslProtocol = "TLSv1.2";
-//		options.sslTruststore = "/home/kory/eclipse-workspace/irods4j/truststore.jks";
-//		options.sslTruststorePassword = "changeit";
-
-		comm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.of(options),
-				Optional.empty());
-		assertNotNull(comm);
-	}
-
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-		IRODSApi.rcDisconnect(comm);
-	}
-
-	@Test
-	void testPamPasswordAuthentication() throws Exception {
-		final var runTest = System.getProperty("irods.test.pam_password.enable");
-		assumeTrue("1".equals(runTest), "Requires a PAM-enabled iRODS server");
-		IRODSApi.rcAuthenticateClient(comm, new PamPasswordAuthPlugin(true), password);
+		try (var conn = new IRODSConnection(options)) {
+			conn.connect(host, port, new QualifiedUsername(username, zone));
+			conn.authenticate(new PamPasswordAuthPlugin(true), password);
+		}
 	}
 
 }

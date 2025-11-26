@@ -38,7 +38,7 @@ public class IRODSUsers {
 	 * 
 	 * @since 0.1.0
 	 */
-	public static enum UserType {
+	public enum UserType {
 		RODSUSER, GROUPADMIN, RODSADMIN, RODSGROUP
 	}
 

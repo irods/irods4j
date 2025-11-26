@@ -2,7 +2,6 @@ package org.irods.irods4j.high_level;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,7 +9,6 @@ import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.Versioning;
 import org.irods.irods4j.common.XmlUtil;
-import org.irods.irods4j.high_level.administration.IRODSUsers.User;
 import org.irods.irods4j.high_level.catalog.IRODSQuery;
 import org.irods.irods4j.high_level.catalog.IRODSQuery.GenQuery1QueryArgs;
 import org.irods.irods4j.high_level.connection.IRODSConnection;
@@ -39,8 +37,6 @@ class IRODSQueryTest {
 	static String username = "rods";
 	static String password = "rods";
 	static IRODSConnection conn;
-
-	static User rodsuser = new User("TestIRODSUsers_alice", Optional.of(zone));
 
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
@@ -191,8 +187,6 @@ class IRODSQueryTest {
 			// Execute the query in tempZone.
 			input.addApiOption(IRODSKeywords.ZONE, zone);
 
-			var output = new StringBuilder();
-
 			IRODSQuery.executeGenQuery1(conn.getRcComm(), input, row -> {
 				// Each row should contain 3 columns.
 				assertEquals(3, row.size());
@@ -203,7 +197,7 @@ class IRODSQueryTest {
 				return false;
 			});
 		} finally {
-			assertDoesNotThrow(() -> IRODSFilesystem.remove(conn.getRcComm(), logicalPath, IRODSFilesystem.RemoveOptions.NO_TRASH));
+			IRODSFilesystem.remove(conn.getRcComm(), logicalPath, IRODSFilesystem.RemoveOptions.NO_TRASH);
 		}
 	}
 
@@ -231,7 +225,7 @@ class IRODSQueryTest {
 			assertEquals(3, row.size());
 			assertEquals(11, row.get(2).length());
 		} finally {
-			assertDoesNotThrow(() -> IRODSFilesystem.remove(conn.getRcComm(), logicalPath, IRODSFilesystem.RemoveOptions.NO_TRASH));
+			IRODSFilesystem.remove(conn.getRcComm(), logicalPath, IRODSFilesystem.RemoveOptions.NO_TRASH);
 		}
 	}
 
