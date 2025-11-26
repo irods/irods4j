@@ -1139,22 +1139,29 @@ public class IRODSFilesystem {
 
 		if (/* DATA_OBJ_T */ 1 == objectType) {
 			Optional<String> zone = extractZoneFromPath(path);
-			// TODO Open issue for this GenQuery2 query. It uses the wrong table alias for
-			// DATA_ACCESS_USER_ZONE. The workaround is to use DATA_ACCESS_USER_ID and
-			// resolve the user name, user zone, and user type against it.
-//			var query = String.format(
-//					"select DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE, DATA_ACCESS_PERM_NAME, USER_TYPE where COLL_NAME = '%' and DATA_NAME = '%s'",
-//					fspath.getParent().toString(), fspath.getFileName().toString());
-//			for (var row : IRODSQuery.executeGenQuery(comm, zone, query)) {
-//				var ep = new EntityPermission();
-//				ep.name = row.get(0);
-//				ep.zone = row.get(1);
-//				ep.prms = toPermissionEnum(row.get(2));
-//				ep.type = row.get(3);
-//				perms.add(ep);
-//			}
 
-			// TODO THE WORKAROUND.
+			// TODO(#135): Enable this code block once GenQuery2 is updated to support this.
+//			if (Versioning.compareVersions(comm.relVersion.substring(4), "5.0.2") > 0 ||
+//					Versioning.compareVersions(comm.relVersion.substring(4), "4.3.5") == 0) {
+//				// GenQuery2 does not define the table join info for handling such a query.
+//				// The GenQuery2 parser needs additional powers for handling a query such as this.
+//				String query = String.format(
+//						"select DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE, DATA_ACCESS_PERM_NAME, USER_TYPE where COLL_NAME = '%s' and DATA_NAME = '%s'",
+//						LogicalPath.parentPath(path), LogicalPath.objectName(path));
+//				List<List<String>> rows = zone.isPresent()
+//						? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
+//						: IRODSQuery.executeGenQuery2(comm, query);
+//				for (List<String> row : rows) {
+//					var ep = new EntityPermission();
+//					ep.name = row.get(0);
+//					ep.zone = row.get(1);
+//					ep.prms = toPermissionEnum(row.get(2));
+//					ep.type = IRODSUsers.toUserType(row.get(3));
+//					perms.add(ep);
+//				}
+//
+//				return perms;
+//			}
 
 			// First, get the user id and permissions on the data object.
 			HashMap<String, String> map = new HashMap<String, String>();
