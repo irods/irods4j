@@ -11,6 +11,22 @@ and this project **only** adheres to the following _(as defined at [Semantic Ver
 > - MINOR version when you add functionality in a backward compatible manner
 > - PATCH version when you make backward compatible bug fixes
 
+## [0.6.0] - 2025-12-04
+
+This release expands support for secure communication and improves retrieval of permission information when using the high-level filesystem API.
+
+### Changed
+
+- Increase maximum number of data-object permissions returned by `IRODSFilesystem#status` from 250 to 10000 (#131).
+
+### Fixed
+
+- Fix `IRODSFilesystem#status`'s handling of data objects which have no permissions (#132).
+
+### Added
+
+- Add support for secure communication via JSSE `TrustManager`s (#130).
+
 ## [0.5.0] - 2025-10-15
 
 This release makes it so that users can retrieve the checksum of a data object while iterating over a collection.
