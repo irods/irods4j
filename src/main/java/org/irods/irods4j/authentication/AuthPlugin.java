@@ -19,6 +19,7 @@ import org.irods.irods4j.low_level.protocol.packing_instructions.BinBytesBuf_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.MsgHeader_PI;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.irods.irods4j.low_level.protocol.packing_instructions.RError_PI;
 
 public abstract class AuthPlugin {
 
@@ -96,6 +97,23 @@ public abstract class AuthPlugin {
 			log.debug("Received MsgHeader_PI: {}", XmlUtil.toXmlString(mh));
 		}
 
+		if (mh.msgLen > 0) {
+			bbbuf = Network.readObject(comm.sin, mh.msgLen, BinBytesBuf_PI.class);
+		}
+
+		if (mh.errorLen > 0) {
+			comm.rError = Network.readObject(comm.sin, mh.errorLen, RError_PI.class);
+		}
+
+		// This code block should never execute because authentication is
+		// unlikely to rely on a trailing byte stream. That said, we include
+		// this for completeness (i.e. this mirrors procApiRequest() in the
+		// implementation of the C++ auth plugin framework).
+		if (mh.bsLen > 0) {
+			byte[] buffer = new byte[mh.bsLen];
+			Network.readBytes(comm.sin, buffer, mh.bsLen);
+		}
+
 		// Check for errors.
 		if (mh.intInfo < 0) {
 			throw new IRODSException(mh.intInfo, "Client request error");
@@ -105,7 +123,6 @@ public abstract class AuthPlugin {
 		// implementation because we don't handle it. Although it would be weird if the
 		// check above indicated success and rError information existed in the stream.
 
-		bbbuf = Network.readObject(comm.sin, mh.msgLen, BinBytesBuf_PI.class);
 		ObjectMapper jm = JsonUtil.getJsonMapper();
 		return jm.readTree(bbbuf.buf);
 	}
