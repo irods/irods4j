@@ -563,19 +563,14 @@ public class IRODSApi {
 		SecureRandom secureRandom = new SecureRandom();
 		secureRandom.nextBytes(key);
 
-		BytesBuf_PI bbuf = new BytesBuf_PI();
-		bbuf.buflen = key.length;
-		bbuf.buf = key;
-		byte[] msgbody = XmlUtil.toXmlString(bbuf).getBytes(StandardCharsets.UTF_8);
-
 		mh.type = "SHARED_SECRET";
-		mh.msgLen = msgbody.length;
+		mh.msgLen = key.length;
 		mh.errorLen = 0;
 		mh.bsLen = 0;
 		mh.intInfo = 0;
 
 		Network.write(sout, mh);
-		Network.writeBytes(sout, msgbody);
+		Network.writeBytes(sout, key);
 		sout.flush();
 
 		// TODO Do equivalent of sslPostConnectionCheck().
