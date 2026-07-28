@@ -11,6 +11,30 @@ and this project **only** adheres to the following _(as defined at [Semantic Ver
 > - MINOR version when you add functionality in a backward compatible manner
 > - PATCH version when you make backward compatible bug fixes
 
+## [0.7.0] - 2026-07-29
+
+This release fixes a bug that caused the connected iRODS agent to crash during a TLS-enabled server redirect. It also improves handling of single quotes in logical paths.
+
+### Security
+
+- Bump log4j version to 2.25.4 (#145).
+
+### Changed
+
+- `LogicalPath#parentPath`: Return empty string when path does not contain a forward slash and is not absolute (#150).
+- `IRODSFilesystem`: Escape single quotes in logical paths before sending API request to server (#150).
+- `IRODSReplicas`: Escape single quotes in logical paths before sending API request to server (#150).
+
+### Fixed
+
+- Fix handling of `SHARED_SECRET` payload for TLS (#142).
+- Mirror behavior of `procApiRequest` in authentication flow method (#144).
+- `IRODSReplicas`: Fix emptiness checks for GenQuery2 (#151).
+
+### Added
+
+- Add function for hex-escaping single quotes in logical paths (#150).
+
 ## [0.6.0] - 2025-12-04
 
 This release expands support for secure communication and improves retrieval of permission information when using the high-level filesystem API.
