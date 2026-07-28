@@ -47,7 +47,7 @@
 		<jackson.version>2.18.1</jackson.version>
 		<jsonpatch.version>1.13</jsonpatch.version>
 		<junit.version>5.11.4</junit.version>
-		<log4j.version>2.24.3</log4j.version>
+		<log4j.version>2.25.4</log4j.version>
 		<woodstox.version>6.5.0</woodstox.version>
 	</properties>
 
