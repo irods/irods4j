@@ -1,9 +1,7 @@
 package org.irods.irods4j.high_level;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,12 +14,15 @@ import org.irods.irods4j.high_level.connection.QualifiedUsername;
 import org.irods.irods4j.high_level.io.IRODSDataObjectStream;
 import org.irods.irods4j.high_level.vfs.IRODSFilesystem;
 import org.irods.irods4j.high_level.vfs.IRODSFilesystem.RemoveOptions;
+import org.irods.irods4j.high_level.vfs.IRODSReplicas;
 import org.irods.irods4j.high_level.vfs.Permission;
 import org.irods.irods4j.low_level.api.IRODSException;
 import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjInp_PI.OpenFlags;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class IRODSFilesystemTest {
 
@@ -162,6 +163,45 @@ class IRODSFilesystemTest {
 			return username.equals(ep.getName()) && zone.equals(ep.getZone()) && Permission.OWN == ep.getPermission()
 					&& UserType.RODSADMIN == ep.getUserType();
 		}));
+	}
+
+	@Test
+	void testSupportForSingleQuotesInLogicalPaths() throws Exception {
+		var collection = '/' + String.join("/", zone, "home", username, "single'quotes'in'collection");
+		var dataObject = String.join("/", collection, "single'quotes'in'data'object");
+
+		try {
+			// Create a collection and verify the filesystem library can identify it.
+			// Keep in mind that the collection path contains embedded single quotes.
+			IRODSFilesystem.createCollections(conn.getRcComm(), collection);
+			assertTrue(IRODSFilesystem.exists(conn.getRcComm(), collection));
+			assertTrue(IRODSFilesystem.isCollection(conn.getRcComm(), collection));
+			assertTrue(IRODSFilesystem.isCollectionRegistered(conn.getRcComm(), collection));
+			assertFalse(IRODSFilesystem.isSpecialCollection(conn.getRcComm(), collection));
+			assertTrue(IRODSFilesystem.lastWriteTime(conn.getRcComm(), collection) > 0L);
+
+			// Create a new data object. This data object path contains embedded single
+			// quotes in the collection and data object name.
+			var dataBuffer = "Hello, iRODS supports embedded single quotes!".getBytes(StandardCharsets.UTF_8);
+			try (var out = new IRODSDataObjectStream()) {
+				out.open(conn.getRcComm(), dataObject, OpenFlags.O_CREAT | OpenFlags.O_WRONLY);
+				out.write(dataBuffer, dataBuffer.length);
+			}
+			assertTrue(IRODSFilesystem.exists(conn.getRcComm(), collection));
+			assertTrue(IRODSFilesystem.isDataObject(conn.getRcComm(), dataObject));
+			assertTrue(IRODSFilesystem.isDataObjectRegistered(conn.getRcComm(), dataObject));
+			assertEquals(dataBuffer.length, IRODSFilesystem.dataObjectSize(conn.getRcComm(), dataObject));
+			assertFalse(IRODSFilesystem.isSpecialCollection(conn.getRcComm(), dataObject));
+			assertTrue(IRODSFilesystem.lastWriteTime(conn.getRcComm(), dataObject) > 0L);
+
+			// Calculate a checksum for the replica.
+			assertEquals("", IRODSFilesystem.dataObjectChecksum(conn.getRcComm(), dataObject));
+			IRODSReplicas.replicaChecksum(conn.getRcComm(), dataObject, 0, IRODSReplicas.VerificationCalculation.ALWAYS);
+			assertEquals("sha2:dbN9VEj3kAmeU/objQ+ffJENPHqwYZYK5+dOE4oLy5M=", IRODSFilesystem.dataObjectChecksum(conn.getRcComm(), dataObject));
+		}
+		finally {
+			IRODSFilesystem.removeAll(conn.getRcComm(), collection, RemoveOptions.NO_TRASH);
+		}
 	}
 
 }
