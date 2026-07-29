@@ -58,4 +58,9 @@ public class LogicalPathTest {
 		Assertions.assertThrows(NullPointerException.class, () -> LogicalPath.segments(null));
 	}
 
+	@Test
+	void testEscapeSingleQuotesInLogicalPath() {
+		Assertions.assertEquals("/temp\\x27Zone/home/r\\x27ods/fee\\x27fi\\x27fo\\x27fum", LogicalPath.singleQuotesToHex("/temp'Zone/home/r'ods/fee'fi'fo'fum"));
+	}
+
 }
