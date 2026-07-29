@@ -2,15 +2,20 @@ package org.irods.irods4j.high_level;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.authentication.NativeAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
+import org.irods.irods4j.high_level.administration.IRODSUsers;
 import org.irods.irods4j.high_level.administration.IRODSUsers.UserType;
+import org.irods.irods4j.high_level.administration.IRODSZones;
 import org.irods.irods4j.high_level.connection.IRODSConnection;
 import org.irods.irods4j.high_level.connection.QualifiedUsername;
+import org.irods.irods4j.high_level.io.IRODSDataObjectOutputStream;
 import org.irods.irods4j.high_level.io.IRODSDataObjectStream;
 import org.irods.irods4j.high_level.vfs.IRODSFilesystem;
 import org.irods.irods4j.high_level.vfs.IRODSFilesystem.RemoveOptions;
@@ -201,6 +206,59 @@ class IRODSFilesystemTest {
 		}
 		finally {
 			IRODSFilesystem.removeAll(conn.getRcComm(), collection, RemoveOptions.NO_TRASH);
+		}
+	}
+
+	@Test
+	void testGroupMembershipIsNotExpandedWhenListingPermissionsOnDataObject() throws Exception {
+		var sandbox = '/' + String.join("/", zone, "home", username, "group_member_expansion");
+		var dataObject = sandbox + "/group_owned_data_object.txt";
+
+		var rodsuser1 = new IRODSUsers.User("rodsuser1", Optional.empty());
+		var rodsuser2 = new IRODSUsers.User("rodsuser2", Optional.empty());
+
+		var group1 = new IRODSUsers.Group("user1_group");
+		var group2 = new IRODSUsers.Group("user2_group");
+
+		try {
+			IRODSFilesystem.createCollections(conn.getRcComm(), sandbox);
+
+			// Create two rodsuser users.
+			IRODSUsers.addUser(conn.getRcComm(), rodsuser1, UserType.RODSUSER, IRODSZones.ZoneType.LOCAL);
+			IRODSUsers.addUser(conn.getRcComm(), rodsuser2, UserType.RODSUSER, IRODSZones.ZoneType.LOCAL);
+
+			// Create two groups and add one user to each of them.
+			IRODSUsers.addGroup(conn.getRcComm(), group1);
+			IRODSUsers.addGroup(conn.getRcComm(), group2);
+			IRODSUsers.addUserToGroup(conn.getRcComm(), group1, rodsuser2);
+			IRODSUsers.addUserToGroup(conn.getRcComm(), group2, rodsuser1);
+
+			// Create a data object and adjust the permissions such that only members
+			// of the groups can access it.
+			try (var out = new IRODSDataObjectOutputStream(conn.getRcComm(), dataObject, true, false)) {
+				out.write("not empty".getBytes(StandardCharsets.UTF_8));
+			}
+			IRODSFilesystem.permissions(conn.getRcComm(), dataObject, group1.name, Permission.READ_OBJECT);
+			IRODSFilesystem.permissions(conn.getRcComm(), dataObject, group2.name, Permission.READ_OBJECT);
+			IRODSFilesystem.permissions(conn.getRcComm(), dataObject, username, Permission.NULL);
+
+			// Show that retrieval of permissions for groups are not expanded. That is,
+			// we expect the permissions list to contain only the recently created groups.
+			// Indirect permissions (i.e. the members within the groups) must not be part
+			// of the permissions list.
+			var status = IRODSFilesystem.status(conn.getRcComm(), dataObject);
+			var perms = status.getPermissions();
+			assertEquals(2, perms.size());
+			assertTrue(perms.stream().anyMatch(p -> UserType.RODSGROUP == p.getUserType() && group1.name.equals(p.getName())));
+			assertTrue(perms.stream().anyMatch(p -> UserType.RODSGROUP == p.getUserType() && group2.name.equals(p.getName())));
+		}
+		finally {
+			try { IRODSFilesystem.permissions(IRODSFilesystem.asAdmin, conn.getRcComm(), dataObject, username, Permission.OWN); } catch (Exception ignored) {}
+			try { IRODSFilesystem.removeAll(conn.getRcComm(), sandbox, RemoveOptions.NO_TRASH); } catch (Exception ignored) {}
+			try { IRODSUsers.removeGroup(conn.getRcComm(), group1); } catch (Exception ignored) {}
+			try { IRODSUsers.removeGroup(conn.getRcComm(), group2); } catch (Exception ignored) {}
+			try { IRODSUsers.removeUser(conn.getRcComm(), rodsuser1); } catch (Exception ignored) {}
+			try { IRODSUsers.removeUser(conn.getRcComm(), rodsuser2); } catch (Exception ignored) {}
 		}
 	}
 
