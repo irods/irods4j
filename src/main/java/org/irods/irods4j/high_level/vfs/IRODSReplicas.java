@@ -67,7 +67,7 @@ public class IRODSReplicas {
 
 		var query = "select DATA_SIZE where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_NUM = '%d'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, replicaNumber));
-		if (!rows.isEmpty()) {
+		if (rows.isEmpty()) {
 			throw new IllegalStateException("Replica does not exist");
 		}
 
@@ -99,7 +99,7 @@ public class IRODSReplicas {
 
 		var query = "select DATA_SIZE where COLL_NAME = '%s' and DATA_NAME = '%s' and RESC_NAME = '%s'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, leafResourceName));
-		if (!rows.isEmpty()) {
+		if (rows.isEmpty()) {
 			throw new IllegalStateException("Replica does not exist");
 		}
 
@@ -716,7 +716,7 @@ public class IRODSReplicas {
 
 		var query = "select DATA_MODIFY_TIME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_NUM = '%d'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, replicaNumber));
-		if (!rows.isEmpty()) {
+		if (rows.isEmpty()) {
 			throw new IllegalStateException("Replica does not exist");
 		}
 
@@ -749,7 +749,7 @@ public class IRODSReplicas {
 
 		var query = "select DATA_MODIFY_TIME where COLL_NAME = '%s' and DATA_NAME = '%s' and RESC_NAME = '%s'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, leafResourceName));
-		if (!rows.isEmpty()) {
+		if (rows.isEmpty()) {
 			throw new IllegalStateException("Replica does not exist");
 		}
 
@@ -858,7 +858,7 @@ public class IRODSReplicas {
 
 		var query = "select DATA_REPL_NUM where COLL_NAME = '%s' and DATA_NAME = '%s' and RESC_NAME = '%s'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, leafResourceName));
-		if (!rows.isEmpty()) {
+		if (rows.isEmpty()) {
 			throw new IllegalStateException("Replica does not exist");
 		}
 
@@ -891,7 +891,7 @@ public class IRODSReplicas {
 
 		var query = "select RESC_NAME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_NUM = '%d'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, replicaNumber));
-		if (!rows.isEmpty()) {
+		if (rows.isEmpty()) {
 			throw new IllegalStateException("Replica does not exist");
 		}
 
