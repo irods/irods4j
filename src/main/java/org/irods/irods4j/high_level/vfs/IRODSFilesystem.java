@@ -419,7 +419,7 @@ public class IRODSFilesystem {
 		throwIfNullOrEmpty(path, "Path is null or empty");
 		throwIfPathLengthExceedsLimit(path);
 
-		String query = String.format("select COLL_ID where COLL_NAME = '%s'", LogicalPath.parentPath(path));
+		String query = String.format("select COLL_ID where COLL_NAME = '%s'", LogicalPath.singleQuotesToHex(LogicalPath.parentPath(path)));
 		Optional<String> zone = extractZoneFromPath(path);
 		return zone.isPresent()
 			? !IRODSQuery.executeGenQuery2(comm, zone.get(), query).isEmpty()
@@ -444,7 +444,7 @@ public class IRODSFilesystem {
 		throwIfPathLengthExceedsLimit(path);
 
 		String query = String.format("select DATA_ID where COLL_NAME = '%s' and DATA_NAME = '%s'",
-				LogicalPath.parentPath(path), LogicalPath.objectName(path));
+				LogicalPath.singleQuotesToHex(LogicalPath.parentPath(path)), LogicalPath.singleQuotesToHex(LogicalPath.objectName(path)));
 		Optional<String> zone = extractZoneFromPath(path);
 		return zone.isPresent()
 			? !IRODSQuery.executeGenQuery2(comm, zone.get(), query).isEmpty()
@@ -517,7 +517,7 @@ public class IRODSFilesystem {
 		Optional<String> zone = extractZoneFromPath(path);
 		String query = String.format(
 				"select DATA_SIZE, DATA_MODIFY_TIME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_STATUS = '1'",
-				LogicalPath.parentPath(path), LogicalPath.objectName(path));
+				LogicalPath.singleQuotesToHex(LogicalPath.parentPath(path)), LogicalPath.singleQuotesToHex(LogicalPath.objectName(path)));
 		List<List<String>> rows = zone.isPresent()
 			? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
 			: IRODSQuery.executeGenQuery2(comm, query);
@@ -651,7 +651,7 @@ public class IRODSFilesystem {
 		throwIfNull(comm, "RcComm is null");
 		throwIfNullOrEmpty(path, "Path is null or empty");
 
-		String query = String.format("select COLL_TYPE, COLL_INFO1, COLL_INFO2 where COLL_NAME = '%s'", path);
+		String  query = String.format("select COLL_TYPE, COLL_INFO1, COLL_INFO2 where COLL_NAME = '%s'", LogicalPath.singleQuotesToHex(path));
 		Optional<String> zone = extractZoneFromPath(path);
 
 		List<List<String>> rows = zone.isPresent()
@@ -722,9 +722,9 @@ public class IRODSFilesystem {
 			// Fetch information for good replicas only.
 			query = String.format(
 					"select max(DATA_MODIFY_TIME) where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_STATUS = '1'",
-					LogicalPath.parentPath(path), LogicalPath.objectName(path));
+					LogicalPath.singleQuotesToHex(LogicalPath.parentPath(path)), LogicalPath.singleQuotesToHex(LogicalPath.objectName(path)));
 		} else if (isCollection(s)) {
-			query = String.format("select COLL_MODIFY_TIME where COLL_NAME = '%s'", path);
+			query = String.format("select COLL_MODIFY_TIME where COLL_NAME = '%s'", LogicalPath.singleQuotesToHex(path));
 		} else {
 			throw new IRODSFilesystemException(IRODSErrorCodes.INVALID_OBJECT_TYPE,
 					"Path does not identify a data object or collection", path);
@@ -1022,7 +1022,7 @@ public class IRODSFilesystem {
 
 		String query = String.format(
 				"select DATA_CHECKSUM, DATA_MODIFY_TIME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_STATUS = '1'",
-				LogicalPath.parentPath(path), LogicalPath.objectName(path));
+				LogicalPath.singleQuotesToHex(LogicalPath.parentPath(path)), LogicalPath.singleQuotesToHex(LogicalPath.objectName(path)));
 		Optional<String> zone = extractZoneFromPath(path);
 
 		long latestMtime = 0L;
@@ -1147,7 +1147,7 @@ public class IRODSFilesystem {
 //				// The GenQuery2 parser needs additional powers for handling a query such as this.
 //				String query = String.format(
 //						"select DATA_ACCESS_USER_NAME, DATA_ACCESS_USER_ZONE, DATA_ACCESS_PERM_NAME, USER_TYPE where COLL_NAME = '%s' and DATA_NAME = '%s'",
-//						LogicalPath.parentPath(path), LogicalPath.objectName(path));
+//						LogicalPath.singleQuotesToHex(LogicalPath.parentPath(path)), LogicalPath.singleQuotesToHex(LogicalPath.objectName(path)));
 //				List<List<String>> rows = zone.isPresent()
 //						? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
 //						: IRODSQuery.executeGenQuery2(comm, query);
@@ -1167,7 +1167,7 @@ public class IRODSFilesystem {
 			HashMap<String, String> map = new HashMap<String, String>();
 			String query = String.format(
 					"select DATA_ACCESS_USER_ID, DATA_ACCESS_PERM_NAME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_ACCESS_USER_ID is not null limit 10000",
-					LogicalPath.parentPath(path), LogicalPath.objectName(path));
+					LogicalPath.singleQuotesToHex(LogicalPath.parentPath(path)), LogicalPath.singleQuotesToHex(LogicalPath.objectName(path)));
 			List<List<String>> rows = zone.isPresent()
 				? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
 				: IRODSQuery.executeGenQuery2(comm, query);
@@ -1232,7 +1232,7 @@ public class IRODSFilesystem {
 		}
 
 		Optional<String> zone = extractZoneFromPath(path);
-		String query = String.format("select COLL_INHERITANCE where COLL_NAME = '%s'", path);
+		String query = String.format("select COLL_INHERITANCE where COLL_NAME = '%s'", LogicalPath.singleQuotesToHex(path));
 		List<List<String>> rows = zone.isPresent()
 			? IRODSQuery.executeGenQuery2(comm, zone.get(), query)
 			: IRODSQuery.executeGenQuery2(comm, query);
