@@ -26,8 +26,7 @@ public class LogicalPathTest {
 
 	@Test
 	void testGetParentPathFromLogicalPath() {
-		Assertions.assertNull(LogicalPath.parentPath(""));
-
+		Assertions.assertEquals("", LogicalPath.parentPath(""));
 		Assertions.assertEquals("/", LogicalPath.parentPath("/"));
 		Assertions.assertEquals("/", LogicalPath.parentPath("/tempZone"));
 		Assertions.assertEquals("/tempZone", LogicalPath.parentPath("/tempZone/home"));
