@@ -62,8 +62,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfLessThanLowerBound(replicaNumber, 0, "Replica number is less than 0");
 
-		var collName = LogicalPath.parentPath(logicalPath);
-		var dataName = LogicalPath.objectName(logicalPath);
+		var collName = LogicalPath.singleQuotesToHex(LogicalPath.parentPath(logicalPath));
+		var dataName = LogicalPath.singleQuotesToHex(LogicalPath.objectName(logicalPath));
 
 		var query = "select DATA_SIZE where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_NUM = '%d'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, replicaNumber));
@@ -94,8 +94,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfNullOrEmpty(leafResourceName, "Leaf resource is null or empty");
 
-		var collName = LogicalPath.parentPath(logicalPath);
-		var dataName = LogicalPath.objectName(logicalPath);
+		var collName = LogicalPath.singleQuotesToHex(LogicalPath.parentPath(logicalPath));
+		var dataName = LogicalPath.singleQuotesToHex(LogicalPath.objectName(logicalPath));
 
 		var query = "select DATA_SIZE where COLL_NAME = '%s' and DATA_NAME = '%s' and RESC_NAME = '%s'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, leafResourceName));
@@ -711,8 +711,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfLessThanLowerBound(replicaNumber, 0, "Replica number is less than 0");
 
-		var collName = LogicalPath.parentPath(logicalPath);
-		var dataName = LogicalPath.objectName(logicalPath);
+		var collName = LogicalPath.singleQuotesToHex(LogicalPath.parentPath(logicalPath));
+		var dataName = LogicalPath.singleQuotesToHex(LogicalPath.objectName(logicalPath));
 
 		var query = "select DATA_MODIFY_TIME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_NUM = '%d'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, replicaNumber));
@@ -744,8 +744,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfNullOrEmpty(leafResourceName, "Resource is null or empty");
 
-		var collName = LogicalPath.parentPath(logicalPath);
-		var dataName = LogicalPath.objectName(logicalPath);
+		var collName = LogicalPath.singleQuotesToHex(LogicalPath.parentPath(logicalPath));
+		var dataName = LogicalPath.singleQuotesToHex(LogicalPath.objectName(logicalPath));
 
 		var query = "select DATA_MODIFY_TIME where COLL_NAME = '%s' and DATA_NAME = '%s' and RESC_NAME = '%s'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, leafResourceName));
@@ -853,8 +853,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfNullOrEmpty(leafResourceName, "Resource is null or empty");
 
-		var collName = LogicalPath.parentPath(logicalPath);
-		var dataName = LogicalPath.objectName(logicalPath);
+		var collName = LogicalPath.singleQuotesToHex(LogicalPath.parentPath(logicalPath));
+		var dataName = LogicalPath.singleQuotesToHex(LogicalPath.objectName(logicalPath));
 
 		var query = "select DATA_REPL_NUM where COLL_NAME = '%s' and DATA_NAME = '%s' and RESC_NAME = '%s'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, leafResourceName));
@@ -886,8 +886,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfLessThanLowerBound(replicaNumber, 0, "Replica number is less than 0");
 
-		var collName = LogicalPath.parentPath(logicalPath);
-		var dataName = LogicalPath.objectName(logicalPath);
+		var collName = LogicalPath.singleQuotesToHex(LogicalPath.parentPath(logicalPath));
+		var dataName = LogicalPath.singleQuotesToHex(LogicalPath.objectName(logicalPath));
 
 		var query = "select RESC_NAME where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_NUM = '%d'";
 		var rows = IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, replicaNumber));
@@ -919,8 +919,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfLessThanLowerBound(replicaNumber, 0, "Replica number is less than 0");
 
-		var collName = LogicalPath.parentPath(logicalPath);
-		var dataName = LogicalPath.objectName(logicalPath);
+		var collName = LogicalPath.singleQuotesToHex(LogicalPath.parentPath(logicalPath));
+		var dataName = LogicalPath.singleQuotesToHex(LogicalPath.objectName(logicalPath));
 
 		var query = "select DATA_ID where COLL_NAME = '%s' and DATA_NAME = '%s' and DATA_REPL_NUM = '%d'";
 		return !IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, replicaNumber)).isEmpty();
@@ -947,8 +947,8 @@ public class IRODSReplicas {
 		throwIfNullOrEmpty(logicalPath, "Path is null or empty");
 		throwIfNullOrEmpty(leafResourceName, "Resource is null or empty");
 
-		var collName = LogicalPath.parentPath(logicalPath);
-		var dataName = LogicalPath.objectName(logicalPath);
+		var collName = LogicalPath.singleQuotesToHex(LogicalPath.parentPath(logicalPath));
+		var dataName = LogicalPath.singleQuotesToHex(LogicalPath.objectName(logicalPath));
 
 		var query = "select DATA_ID where COLL_NAME = '%s' and DATA_NAME = '%s' and RESC_NAME = '%s'";
 		return !IRODSQuery.executeGenQuery2(comm, String.format(query, collName, dataName, leafResourceName)).isEmpty();
