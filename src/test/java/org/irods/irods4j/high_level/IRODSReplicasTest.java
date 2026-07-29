@@ -1,9 +1,5 @@
 package org.irods.irods4j.high_level;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
@@ -29,6 +25,8 @@ import org.irods.irods4j.low_level.protocol.packing_instructions.DataObjInp_PI.O
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class IRODSReplicasTest {
 
@@ -111,6 +109,41 @@ class IRODSReplicasTest {
 			}
 
 			IRODSUsers.removeUser(conn.getRcComm(), rodsuser);
+		}
+	}
+
+	@Test
+	void testSupportForSingleQuotesInLogicalPaths() throws Exception {
+		String collection = '/' + String.join("/", zone, "home", username, "'replica'collectio'n");
+		String dataObject = String.join("/", collection, "data'object.t'xt");
+
+		try {
+			IRODSFilesystem.createCollections(conn.getRcComm(), collection);
+			assertTrue(IRODSFilesystem.isCollection(conn.getRcComm(), collection));
+
+			byte[] buffer = "the super important data".getBytes(StandardCharsets.UTF_8);
+			try (IRODSDataObjectStream out = new IRODSDataObjectStream()) {
+				out.open(conn.getRcComm(), dataObject, OpenFlags.O_CREAT | OpenFlags.O_WRONLY);
+				out.write(buffer, buffer.length);
+			}
+
+			long replicaNumber = 0;
+			String resource = "demoResc";
+
+			assertTrue(IRODSReplicas.replicaExists(conn.getRcComm(), dataObject, replicaNumber));
+			assertTrue(IRODSReplicas.replicaExists(conn.getRcComm(), dataObject, resource));
+
+			assertEquals(buffer.length, IRODSReplicas.replicaSize(conn.getRcComm(), dataObject, replicaNumber));
+			assertEquals(buffer.length, IRODSReplicas.replicaSize(conn.getRcComm(), dataObject, resource));
+
+			assertTrue(IRODSReplicas.lastWriteTime(conn.getRcComm(), dataObject, replicaNumber) > 0L);
+			assertTrue(IRODSReplicas.lastWriteTime(conn.getRcComm(), dataObject, resource) > 0L);
+
+			assertEquals(resource, IRODSReplicas.toLeafResource(conn.getRcComm(), dataObject, replicaNumber));
+			assertEquals(replicaNumber, IRODSReplicas.toReplicaNumber(conn.getRcComm(), dataObject, resource));
+		}
+		finally {
+			IRODSFilesystem.removeAll(conn.getRcComm(), collection, RemoveOptions.NO_TRASH);
 		}
 	}
 
