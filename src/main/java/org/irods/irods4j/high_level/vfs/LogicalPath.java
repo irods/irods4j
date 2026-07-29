@@ -28,7 +28,7 @@ public final class LogicalPath {
 
 	/**
 	 * Returns the parent path of the given logical path.
-	 * <p>Returns null if the path is relative or no forward slash is found.</p>
+	 * <p>Returns an empty string if the path is relative or no forward slash is found.</p>
 	 *
 	 * @param path The logical path to operate on.
 	 * @since 0.3.0
@@ -36,7 +36,7 @@ public final class LogicalPath {
 	public static String parentPath(String path) {
 		int lastSlash = path.lastIndexOf('/');
 		if (lastSlash <= 0) {
-			return isAbsolute(path) ? "/" : null;
+			return isAbsolute(path) ? "/" : "";
 		}
 		return path.substring(0, lastSlash);
 	}
