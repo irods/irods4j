@@ -79,4 +79,14 @@ public final class LogicalPath {
 		return parts;
 	}
 
+	/**
+	 * Returns a string with all single quotes replaced by their hexadecimal value.
+	 *
+	 * @param path The logical path to operate on.
+	 * @since 0.7.0
+	 */
+	public static String singleQuotesToHex(String path) {
+		return path.replaceAll("'", "\\\\x27");
+	}
+
 }
