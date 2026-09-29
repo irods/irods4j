@@ -23,7 +23,7 @@ import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 
 /**
  * A class which manages a pool of iRODS connections.
- * 
+ *
  * @since 0.1.0
  */
 public class IRODSConnectionPool implements AutoCloseable {
@@ -37,13 +37,14 @@ public class IRODSConnectionPool implements AutoCloseable {
 	private String host;
 	private int port;
 	private QualifiedUsername clientUser;
+	private QualifiedUsername proxyUser;
 	private Function<RcComm, Boolean> authenticator;
 
 	private List<ConnectionContext> pool;
 
 	/**
 	 * A class representing a connection within an {@link IRODSConnectionPool}.
-	 * 
+	 *
 	 * @since 0.1.0
 	 */
 	public static final class PoolConnection implements AutoCloseable {
@@ -56,7 +57,7 @@ public class IRODSConnectionPool implements AutoCloseable {
 
 		/**
 		 * Checks if the connection to iRODS is usable.
-		 * 
+		 *
 		 * @since 0.1.0
 		 */
 		public boolean isValid() {
@@ -65,7 +66,7 @@ public class IRODSConnectionPool implements AutoCloseable {
 
 		/**
 		 * Returns the {@link RcComm} managed by the connection.
-		 * 
+		 *
 		 * @since 0.1.0
 		 */
 		public RcComm getRcComm() {
@@ -74,7 +75,7 @@ public class IRODSConnectionPool implements AutoCloseable {
 
 		/**
 		 * Returns the connection to the pool.
-		 * 
+		 *
 		 * @since 0.1.0
 		 */
 		@Override
@@ -88,11 +89,9 @@ public class IRODSConnectionPool implements AutoCloseable {
 	 * Initializes a newly created connection pool with default
 	 * {@link ConnectionOptions}, default {@link ConnectionPoolOptions}, and space
 	 * for the requested number of iRODS connections.
-	 * 
+	 *
 	 * @param poolSize The number of connections the pool should manage.
-	 * 
 	 * @throws IllegalArgumentException If pool size is less than or equal to 0.
-	 * 
 	 * @since 0.1.0
 	 */
 	public IRODSConnectionPool(int poolSize) {
@@ -104,12 +103,10 @@ public class IRODSConnectionPool implements AutoCloseable {
 	 * Initializes a newly created connection pool with default a
 	 * {@link ConnectionOptions}, a user-defined {@link ConnectionPoolOptions}, and
 	 * space for the requested number of iRODS connections.
-	 * 
+	 *
 	 * @param poolOptions Options which influence the behavior of connection pool.
 	 * @param poolSize    The number of connections the pool should manage.
-	 * 
 	 * @throws IllegalArgumentException If pool size is less than or equal to 0.
-	 * 
 	 * @since 0.1.0
 	 */
 	public IRODSConnectionPool(ConnectionPoolOptions poolOptions, int poolSize) {
@@ -122,14 +119,12 @@ public class IRODSConnectionPool implements AutoCloseable {
 	 * Initializes a newly created connection pool with a user-defined
 	 * {@link ConnectionOptions}, default {@link ConnectionPoolOptions}, and space
 	 * for the requested number of iRODS connections.
-	 * 
+	 *
 	 * @param connOptions The connection options to use when establishing
 	 *                    connections to the iRODS server.
 	 * @param poolSize    The number of connections the pool should manage.
-	 * 
 	 * @throws IllegalArgumentException If connection options is null or the pool
 	 *                                  size is less than or equal to 0.
-	 * 
 	 * @since 0.1.0
 	 */
 	public IRODSConnectionPool(ConnectionOptions connOptions, int poolSize) {
@@ -140,15 +135,13 @@ public class IRODSConnectionPool implements AutoCloseable {
 
 	/**
 	 * Initializes a newly created connection pool.
-	 * 
+	 *
 	 * @param connOptions The connection options to use when establishing
 	 *                    connections to the iRODS server.
 	 * @param poolOptions Options which influence the behavior of connection pool.
 	 * @param poolSize    The number of connections the pool should manage.
-	 * 
 	 * @throws IllegalArgumentException If any constructor argument is null or out
 	 *                                  of range.
-	 * 
 	 * @since 0.1.0
 	 */
 	public IRODSConnectionPool(ConnectionOptions connOptions, ConnectionPoolOptions poolOptions, int poolSize) {
@@ -159,14 +152,12 @@ public class IRODSConnectionPool implements AutoCloseable {
 
 	/**
 	 * Sets the options to use when connecting to the iRODS server.
-	 * 
+	 * <p>
 	 * This only takes affect when starting the connection pool.
-	 * 
+	 *
 	 * @param connOptions The connection options to use when establishing
 	 *                    connections to the iRODS server.
-	 *
 	 * @throws IllegalArgumentException If the connection options are null.
-	 * 
 	 * @since 0.1.0
 	 */
 	public void setConnectionOptions(ConnectionOptions connOptions) {
@@ -176,13 +167,11 @@ public class IRODSConnectionPool implements AutoCloseable {
 
 	/**
 	 * Sets the number of connections the pool should manage.
-	 * 
+	 * <p>
 	 * This only takes affect when starting the connection pool.
-	 * 
+	 *
 	 * @param poolSize The number of connections the pool should manage.
-	 * 
 	 * @throws IllegalArgumentException If the pool size is less than or equal to 0.
-	 * 
 	 * @since 0.1.0
 	 */
 	public void setPoolSize(int poolSize) {
@@ -192,7 +181,7 @@ public class IRODSConnectionPool implements AutoCloseable {
 
 	/**
 	 * Returns the number of connections managed by the pool.
-	 * 
+	 *
 	 * @since 0.1.0
 	 */
 	public int getPoolSize() {
@@ -202,28 +191,58 @@ public class IRODSConnectionPool implements AutoCloseable {
 	/**
 	 * Synchronously establishes one or more connections to an iRODS server and
 	 * authenticates each one using the provided authentication callback.
-	 * 
+	 *
 	 * @param host          The hostname or IP of the iRODS server to connect to.
 	 * @param port          The port number of the iRODS server to connect to.
 	 * @param clientUser    The iRODS user to connect as.
 	 * @param authenticator The callback to use for authentication.
-	 * 
 	 * @throws IRODSException
 	 * @throws IOException
-	 * 
 	 * @throws IllegalArgumentException If any of the construction arguments is null
 	 *                                  or empty.
-	 * 
 	 * @since 0.1.0
 	 */
 	public void start(String host, int port, QualifiedUsername clientUser, Function<RcComm, Boolean> authenticator)
 			throws IOException, IRODSException {
+		startInternal(host, port, null, clientUser, authenticator);
+	}
+
+	/**
+	 * Synchronously establishes one or more connections to an iRODS server with
+	 * proxy user support and authenticates each one using the provided
+	 * authentication callback.
+	 * <p>
+	 * When a proxy user is provided, each connection in the pool is authenticated
+	 * as the proxy user and operations are executed as the client user. This
+	 * mirrors the behavior of
+	 * {@link IRODSConnection#connect(String, int, QualifiedUsername, QualifiedUsername)}.
+	 *
+	 * @param host          The hostname or IP of the iRODS server to connect to.
+	 * @param port          The port number of the iRODS server to connect to.
+	 * @param proxyUser     The proxy user to authenticate.
+	 * @param clientUser    The iRODS user to execute operations as.
+	 * @param authenticator The callback to use for authentication.
+	 * @throws IRODSException
+	 * @throws IOException
+	 * @throws IllegalArgumentException If any of the construction arguments is null
+	 *                                  or empty.
+	 * @since 0.8.0
+	 */
+	public void start(String host, int port, QualifiedUsername proxyUser, QualifiedUsername clientUser,
+					  Function<RcComm, Boolean> authenticator) throws IOException, IRODSException {
+		throwIfInvalidProxyUser(proxyUser);
+		startInternal(host, port, proxyUser, clientUser, authenticator);
+	}
+
+	private void startInternal(String host, int port, QualifiedUsername proxyUser, QualifiedUsername clientUser,
+							   Function<RcComm, Boolean> authenticator) throws IOException, IRODSException {
 		throwIfInvalidHost(host);
 		throwIfInvalidPortNumber(port);
 		throwIfInvalidClientUser(clientUser);
 
 		this.host = host;
 		this.port = port;
+		this.proxyUser = proxyUser;
 		this.clientUser = clientUser;
 		this.authenticator = authenticator;
 
@@ -234,24 +253,50 @@ public class IRODSConnectionPool implements AutoCloseable {
 	 * Asynchronously establishes one or more connections to an iRODS server using
 	 * the provided {@link ExecutorService} and authenticates each one using the
 	 * provided authentication callback.
-	 * 
+	 *
 	 * @param executor      The {@link ExecutorService} to improved connection
 	 *                      startup performance.
 	 * @param host          The hostname or IP of the iRODS server to connect to.
 	 * @param port          The port number of the iRODS server to connect to.
 	 * @param clientUser    The iRODS user to connect as.
 	 * @param authenticator The callback to use for authentication.
-	 * 
 	 * @throws IRODSException
 	 * @throws IOException
-	 * 
 	 * @throws IllegalArgumentException If any of the construction arguments is null
 	 *                                  or empty.
-	 * 
 	 * @since 0.1.0
 	 */
 	public void start(ExecutorService executor, String host, int port, QualifiedUsername clientUser,
-			Function<RcComm, Boolean> authenticator) throws IOException, IRODSException {
+					  Function<RcComm, Boolean> authenticator) throws IOException, IRODSException {
+		startInternal(executor, host, port, null, clientUser, authenticator);
+	}
+
+	/**
+	 * Asynchronously establishes one or more connections to an iRODS server with
+	 * proxy user support using the provided {@link ExecutorService} and
+	 * authenticates each one using the provided authentication callback.
+	 *
+	 * @param executor      The {@link ExecutorService} to use for improved
+	 *                      connection startup performance.
+	 * @param host          The hostname or IP of the iRODS server to connect to.
+	 * @param port          The port number of the iRODS server to connect to.
+	 * @param proxyUser     The proxy user to authenticate.
+	 * @param clientUser    The iRODS user to execute operations as.
+	 * @param authenticator The callback to use for authentication.
+	 * @throws IRODSException
+	 * @throws IOException
+	 * @throws IllegalArgumentException If any of the construction arguments is null
+	 *                                  or empty.
+	 * @since 0.8.0
+	 */
+	public void start(ExecutorService executor, String host, int port, QualifiedUsername proxyUser,
+					  QualifiedUsername clientUser, Function<RcComm, Boolean> authenticator) throws IOException, IRODSException {
+		throwIfInvalidProxyUser(proxyUser);
+		startInternal(executor, host, port, proxyUser, clientUser, authenticator);
+	}
+
+	private void startInternal(ExecutorService executor, String host, int port, QualifiedUsername proxyUser,
+							   QualifiedUsername clientUser, Function<RcComm, Boolean> authenticator) throws IOException, IRODSException {
 		throwIfNull(executor, "Executor service is null");
 		throwIfInvalidHost(host);
 		throwIfInvalidPortNumber(port);
@@ -259,6 +304,7 @@ public class IRODSConnectionPool implements AutoCloseable {
 
 		this.host = host;
 		this.port = port;
+		this.proxyUser = proxyUser;
 		this.clientUser = clientUser;
 		this.authenticator = authenticator;
 
@@ -267,10 +313,10 @@ public class IRODSConnectionPool implements AutoCloseable {
 
 	/**
 	 * Shuts down all pooled connections to the iRODS server.
-	 * 
+	 * <p>
 	 * All pooled connections should be returned to the pool before invoking this
 	 * function.
-	 * 
+	 *
 	 * @since 0.1.0
 	 */
 	public void stop() {
@@ -287,7 +333,7 @@ public class IRODSConnectionPool implements AutoCloseable {
 
 	/**
 	 * Equivalent to {@link IRODSConnectionPool#stop()}.
-	 * 
+	 *
 	 * @since 0.1.0
 	 */
 	@Override
@@ -297,11 +343,11 @@ public class IRODSConnectionPool implements AutoCloseable {
 
 	/**
 	 * Returns a usable connection from the pool.
-	 * 
+	 *
 	 * @since 0.1.0
 	 */
 	public PoolConnection getConnection() {
-		for (int i = 0;; i = (i + 1) % pool.size()) {
+		for (int i = 0; ; i = (i + 1) % pool.size()) {
 			var ctx = pool.get(i);
 
 			if (ctx.lock.tryLock()) {
@@ -344,6 +390,12 @@ public class IRODSConnectionPool implements AutoCloseable {
 	private static void throwIfInvalidClientUser(QualifiedUsername user) {
 		if (null == user) {
 			throw new IllegalArgumentException("Client user is null");
+		}
+	}
+
+	private static void throwIfInvalidProxyUser(QualifiedUsername user) {
+		if (null == user) {
+			throw new IllegalArgumentException("Proxy user is null");
 		}
 	}
 
@@ -398,7 +450,7 @@ public class IRODSConnectionPool implements AutoCloseable {
 				futures.add(executor.get().submit(() -> {
 					var conn = new IRODSConnection(connOptions);
 					try {
-						conn.connect(host, port, clientUser);
+						connect(conn);
 					} catch (Exception e) {
 						connectFailed.set(true);
 						return;
@@ -430,7 +482,7 @@ public class IRODSConnectionPool implements AutoCloseable {
 			for (var i = 0; i < pool.size(); ++i) {
 				var conn = new IRODSConnection(connOptions);
 				try {
-					conn.connect(host, port, clientUser);
+					connect(conn);
 				} catch (Exception e) {
 					connectFailed.set(true);
 					log.error(e.getMessage());
@@ -476,6 +528,21 @@ public class IRODSConnectionPool implements AutoCloseable {
 			ctx.latestRescMTime = latestRescMtime;
 			ctx.rescCount = rescCount;
 		});
+	}
+
+	/**
+	 * Establishes a connection using the proxy user when available, falling back
+	 * to the client user otherwise. This mirrors the behavior of
+	 * {@link IRODSConnection#connect(String, int, QualifiedUsername, QualifiedUsername)}.
+	 *
+	 * @throws Exception
+	 */
+	private void connect(IRODSConnection conn) throws Exception {
+		if (null != proxyUser) {
+			conn.connect(host, port, proxyUser, clientUser);
+		} else {
+			conn.connect(host, port, clientUser);
+		}
 	}
 
 	private void refreshConnection(ConnectionContext ctx) {
@@ -563,7 +630,7 @@ public class IRODSConnectionPool implements AutoCloseable {
 		ctx.conn.disconnect();
 
 		var newConn = new IRODSConnection(connOptions);
-		newConn.connect(host, port, clientUser);
+		connect(newConn);
 
 		if (!authenticator.apply(newConn.getRcComm())) {
 			return;
