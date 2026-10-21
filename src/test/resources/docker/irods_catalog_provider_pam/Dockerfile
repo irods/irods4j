@@ -56,6 +56,7 @@ RUN apt-get update && \
         irods-runtime=${irods_package_version} \
         irods-server=${irods_package_version} \
         irods-icommands=${irods_package_version} \
+        irods-auth-plugin-pam-interactive-client=${irods_plugin_package_version} \
         irods-auth-plugin-pam-interactive-server=${irods_plugin_package_version} \
     && \
     apt-get clean && \
