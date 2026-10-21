@@ -152,22 +152,26 @@ class IRODSFilesystemTest {
 	void testListPermissionsOnDataObject() throws Exception {
 		var path = '/' + String.join("/", zone, "home", username, "testListPermissionsOnDataObject");
 
-		// Create a new data object.
-		try (var out = new IRODSDataObjectStream()) {
-			out.open(conn.getRcComm(), path, OpenFlags.O_CREAT | OpenFlags.O_WRONLY);
-		}
+		try {
+			// Create a new data object.
+			try (var out = new IRODSDataObjectStream()) {
+				out.open(conn.getRcComm(), path, OpenFlags.O_CREAT | OpenFlags.O_WRONLY);
+			}
 
-		// Get the permissions on the data object.
-		var status = IRODSFilesystem.status(conn.getRcComm(), path);
-		status.getPermissions().forEach(p -> {
-			log.debug("[name={}, zone={}, permission={}, type={}]", p.getName(), p.getZone(), p.getPermission(),
-					p.getUserType());
-		});
-		assertFalse(status.getPermissions().isEmpty());
-		assertTrue(status.getPermissions().stream().anyMatch(ep -> {
-			return username.equals(ep.getName()) && zone.equals(ep.getZone()) && Permission.OWN == ep.getPermission()
-					&& UserType.RODSADMIN == ep.getUserType();
-		}));
+			// Get the permissions on the data object.
+			var status = IRODSFilesystem.status(conn.getRcComm(), path);
+			status.getPermissions().forEach(p -> {
+				log.debug("[name={}, zone={}, permission={}, type={}]", p.getName(), p.getZone(), p.getPermission(),
+						p.getUserType());
+			});
+			assertFalse(status.getPermissions().isEmpty());
+			assertTrue(status.getPermissions().stream().anyMatch(ep -> {
+				return username.equals(ep.getName()) && zone.equals(ep.getZone()) && Permission.OWN == ep.getPermission()
+						&& UserType.RODSADMIN == ep.getUserType();
+			}));
+		} finally {
+			IRODSFilesystem.remove(conn.getRcComm(), path, RemoveOptions.NO_TRASH);
+		}
 	}
 
 	@Test
@@ -203,8 +207,7 @@ class IRODSFilesystemTest {
 			assertEquals("", IRODSFilesystem.dataObjectChecksum(conn.getRcComm(), dataObject));
 			IRODSReplicas.replicaChecksum(conn.getRcComm(), dataObject, 0, IRODSReplicas.VerificationCalculation.ALWAYS);
 			assertEquals("sha2:dbN9VEj3kAmeU/objQ+ffJENPHqwYZYK5+dOE4oLy5M=", IRODSFilesystem.dataObjectChecksum(conn.getRcComm(), dataObject));
-		}
-		finally {
+		} finally {
 			IRODSFilesystem.removeAll(conn.getRcComm(), collection, RemoveOptions.NO_TRASH);
 		}
 	}

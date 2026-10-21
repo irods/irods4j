@@ -69,21 +69,25 @@ class IRODSDataObjectStreamTest {
 	void testDataObjectStreamCapturesReplicaNumberAndReplicaToken() throws Exception {
 		var logicalPath = '/' + String.join("/", zone, "home", username, "testDataObjectStreamCapturesReplicaNumberAndReplicaToken.txt");
 
-		var in = new IRODSDataObjectStream();
-		in.open(comm, logicalPath, OpenFlags.O_CREAT | OpenFlags.O_WRONLY);
-		assertTrue(in.isOpen());
+		try {
+			var in = new IRODSDataObjectStream();
+			in.open(comm, logicalPath, OpenFlags.O_CREAT | OpenFlags.O_WRONLY);
+			assertTrue(in.isOpen());
 
-		assertTrue(in.getNativeHandle() >= 3);
-		log.info("Native handle = {}", in.getNativeHandle());
+			assertTrue(in.getNativeHandle() >= 3);
+			log.info("Native handle = {}", in.getNativeHandle());
 
-		assertTrue(in.getReplicaNumber() >= 0);
-		log.info("Replica number = {}", in.getReplicaNumber());
+			assertTrue(in.getReplicaNumber() >= 0);
+			log.info("Replica number = {}", in.getReplicaNumber());
 
-		assertNotNull(in.getReplicaToken());
-		log.info("Replica token = {}", in.getReplicaToken());
+			assertNotNull(in.getReplicaToken());
+			log.info("Replica token = {}", in.getReplicaToken());
 
-		in.close();
-		assertFalse(in.isOpen());
+			in.close();
+			assertFalse(in.isOpen());
+		} finally {
+			IRODSFilesystem.remove(comm, logicalPath, RemoveOptions.NO_TRASH);
+		}
 	}
 
 	@Test
