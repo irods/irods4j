@@ -16,7 +16,9 @@ if [ -f "${unattended_install_file}" ]; then
 
     # Add generated hostname as a recognizable alias.
     sed -i "s/CONTAINER_HOSTNAME_ALIAS/${HOSTNAME}/g" ${unattended_install_file}
-    python3 /var/lib/irods/scripts/setup_irods.py --json_configuration_file ${unattended_install_file}
+    python3 /var/lib/irods/scripts/setup_irods.py \
+        --json_configuration_file ${unattended_install_file} \
+        --skip_post_install_test
 
     # Move the input file used to configure the server out of the way so
     # the container is restartable.
@@ -30,6 +32,24 @@ if [ -f "${unattended_install_file}" ]; then
     # Update the server's configuration for secure communication.
     sed -i 's/="CS_NEG_REFUSE"/="CS_NEG_REQUIRE"/g' /etc/irods/core.re
     sed -i 's/CS_NEG_REFUSE/CS_NEG_REQUIRE/g' /etc/irods/server_config.json /var/lib/irods/.irods/irods_environment.json
+
+    # Temporarily launch the server in the background.
+    su - irods -c 'irodsServer -d'
+    sleep 3
+
+    # Enable support for the new "irods" authentication scheme and add
+    # a new user. This is required by the tests targeting the new authentication scheme.
+    su - irods -c 'iadmin set_grid_configuration authentication password_storage_mode both'
+    su - irods -c 'iadmin mkuser alice rodsuser'
+    su - irods -c 'iadmin moduser alice password apass no-scramble'
+
+    # Shutdown the server.
+    su - irods -c 'kill $(cat /run/irods/irods-server.pid)'
+    sleep 3
+
+    # Used by the docker healthcheck configuration to detect when the
+    # iRODS server has completed setup.
+    su - irods -c 'touch /tmp/irods_server_setup_complete.flag'
 fi
 
 echo "Starting server"
