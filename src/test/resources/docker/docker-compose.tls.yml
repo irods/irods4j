@@ -18,7 +18,10 @@ services:
     volumes:
       - ./tls_certs:/tls_certs:ro
     healthcheck:
-      test: ["CMD-SHELL", "su - irods -c 'ils || exit 1'"]
+      # The file existence check guarantees that the iRODS server has completed
+      # setup. This avoids issues with ils interacting with the server at the wrong time.
+      # See the entrypoint script for details.
+      test: ["CMD-SHELL", "su - irods -c '[ -f /tmp/irods_server_setup_complete.flag ] && ils || exit 1'"]
       interval: 10s
       timeout: 10s
       retries: 3
