@@ -44,10 +44,12 @@ import org.irods.irods4j.low_level.protocol.packing_instructions.GenQueryInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.GenQueryOut_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.GeneralAdminInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.Genquery2Input_PI;
+import org.irods.irods4j.low_level.protocol.packing_instructions.GetLogicalQuotaInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.GridConfigurationInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.GridConfigurationOut_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.INT_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.IRODS_STR_PI;
+import org.irods.irods4j.low_level.protocol.packing_instructions.LogicalQuotaList_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.MiscSvrInfo_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.ModAVUMetadataInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.ModAccessControlInp_PI;
@@ -1053,6 +1055,13 @@ public class IRODSApi {
 			output.value = outputPI.value.myStr;
 		}
 		return ec;
+	}
+
+	public static int rcGetLogicalQuota(RcComm comm, GetLogicalQuotaInp_PI input,
+										Reference<LogicalQuotaList_PI> output)
+			throws IOException {
+		sendApiRequest(comm.sout, 803, input);
+		return receiveServerResponse(comm, LogicalQuotaList_PI.class, output, null);
 	}
 
 }
