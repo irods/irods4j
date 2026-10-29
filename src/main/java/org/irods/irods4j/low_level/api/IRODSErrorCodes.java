@@ -177,6 +177,8 @@ public class IRODSErrorCodes {
 	public static final int INVALID_GENQUERY_AGGREGATE_FUNCTION = -183000;
 	public static final int INVALID_INPUT_ARGUMENT_NULL_POINTER = -184000;
 	public static final int CONNECTION_REFUSED = -185000;
+	public static final int LOGICAL_QUOTA_EXCEEDED = -186000;
+	public static final int NARROWING_CONVERSION_ERROR = -187000;
 
 	public static final int USER_AUTH_SCHEME_ERR = -300000;
 	public static final int USER_AUTH_STRING_EMPTY = -301000;
@@ -664,6 +666,7 @@ public class IRODSErrorCodes {
 	public static final int DIGEST_INIT_FAILED = -1831000;
 	public static final int DIGEST_UPDATE_FAILED = -1832000;
 	public static final int DIGEST_FINAL_FAILED = -1833000;
+	public static final int REBALANCE_NOT_COMPLETE = -1834000;
 
 	public static final int NETCDF_OPEN_ERR = -2000000;
 	public static final int NETCDF_CREATE_ERR = -2001000;
