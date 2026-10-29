@@ -5,6 +5,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,6 +28,25 @@ public class NativeAuthPlugin extends AuthPlugin {
 
 	public String getName() {
 		return "native";
+	}
+
+	/**
+	 * Constructs a container holding the minimum set of inputs needed for
+	 * password-based authentication via
+	 * {@link org.irods.irods4j.low_level.api.IRODSApi#rcAuthenticateClient}.
+	 *
+	 * @param password The password of the proxy user or client user.
+	 * @param ttl      The amount of time (in hours) before the session expires.
+	 *                 Set to 0 to disable session expiration.
+	 * @return The container holding the input arguments.
+	 *
+	 * @since 0.8.0
+	 */
+	public static Map<String, Object> initAuthArguments(String password, long ttl) {
+		Map<String, Object> input = new HashMap<>();
+		input.put(AUTH_PASSWORD_KEY, password);
+		input.put(AUTH_TTL_KEY, String.valueOf(ttl));
+		return input;
 	}
 
 	@Override
@@ -72,7 +93,7 @@ public class NativeAuthPlugin extends AuthPlugin {
 			StringBuilder passwordSb = new StringBuilder();
 			// TODO Enforce the max password length. We need to open an issue for this.
 			// The user could enter a long password which gets truncated!
-			passwordSb.append(context.get("password").asText());
+			passwordSb.append(context.get(AUTH_PASSWORD_KEY).asText());
 			passwordSb.setLength(MAX_PASSWORD_LEN);
 
 			// [50+1] is the unobfuscated user's password.
@@ -96,7 +117,7 @@ public class NativeAuthPlugin extends AuthPlugin {
 		}
 
 		// DO NOT leak the user's plaintext password!
-		resp.remove("password");
+		resp.remove(AUTH_PASSWORD_KEY);
 
 		resp.put("digest", Base64.getEncoder().encodeToString(digest));
 		resp.put(AUTH_NEXT_OPERATION, AUTH_CLIENT_AUTH_RESPONSE);

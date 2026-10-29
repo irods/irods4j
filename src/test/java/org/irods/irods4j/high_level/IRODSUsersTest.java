@@ -49,7 +49,7 @@ class IRODSUsersTest {
 		comm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.empty());
 		assertNotNull(comm);
-		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
+		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 
 		// Create a user to test password manipulation.
 		IRODSUsers.addUser(comm, rodsuser, UserType.RODSUSER, ZoneType.LOCAL);
@@ -83,7 +83,7 @@ class IRODSUsersTest {
 		RcComm comm1 = IRODSApi.rcConnect(host, port, rodsuser.name, rodsuser.zone, Optional.empty(), Optional.empty(),
 				Optional.empty(), Optional.empty());
 		assertNotNull(comm1);
-		IRODSApi.rcAuthenticateClient(comm1, new NativeAuthPlugin(), prop.value);
+		IRODSApi.rcAuthenticateClient(comm1, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(prop.value, 0L));
 		IRODSApi.rcDisconnect(comm1);
 	}
 

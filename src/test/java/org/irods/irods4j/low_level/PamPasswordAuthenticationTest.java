@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Map;
 
 import org.irods.irods4j.authentication.PamPasswordAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
@@ -64,7 +65,9 @@ class PamPasswordAuthenticationTest {
 
 		try (IRODSConnection conn = new IRODSConnection(options)) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			conn.authenticate(new PamPasswordAuthPlugin(true), password);
+
+			Map<String, Object> input = PamPasswordAuthPlugin.createInputMapping(password, 0L);
+			conn.authenticate(new PamPasswordAuthPlugin(true), input);
 		}
 	}
 

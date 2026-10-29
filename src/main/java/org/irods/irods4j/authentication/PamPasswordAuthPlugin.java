@@ -1,6 +1,8 @@
 package org.irods.irods4j.authentication;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +31,22 @@ public class PamPasswordAuthPlugin extends AuthPlugin {
 		return "pam_password";
 	}
 
+	/**
+	 * Returns a map containing inputs for authenticating via
+	 * {@link org.irods.irods4j.low_level.api.IRODSApi#rcAuthenticateClient}
+	 *
+	 * @param password The password of the proxy user or client user.
+	 * @param ttl      The amount of time (in hours) before the session expires.
+	 *                 Set to 0 to disable session expiration.
+	 * @since 0.8.0
+	 */
+	public static Map<String, Object> createInputMapping(String password, Long ttl) {
+		Map<String, Object> input = new HashMap<>();
+		input.put(AUTH_PASSWORD_KEY, password);
+		input.put(AUTH_TTL_KEY, String.valueOf(ttl));
+		return input;
+	}
+
 	@Override
 	public JsonNode authClientStart(RcComm comm, JsonNode context) {
 		ObjectNode resp = (ObjectNode) context.deepCopy();
@@ -38,12 +56,6 @@ public class PamPasswordAuthPlugin extends AuthPlugin {
 		// all cases for connecting to iRODS (i.e. proxied and non-proxied connections).
 		resp.put("user_name", comm.proxyUsername);
 		resp.put("zone_name", comm.proxyUserZone);
-
-		// Map the user's password to the correct property name.
-		resp.put(AUTH_PASSWORD_KEY, context.get("password").asText());
-
-		// DO NOT leak the user's password!
-		resp.remove("password");
 
 		return resp;
 	}
@@ -83,7 +95,7 @@ public class PamPasswordAuthPlugin extends AuthPlugin {
 		// Authenticate using the native authentication and the server generated
 		// password mapped to "request_result".
 		ObjectNode input = JsonUtil.getJsonMapper().createObjectNode();
-		input.put("password", resp.get("request_result").asText());
+		input.put(AUTH_PASSWORD_KEY, resp.get("request_result").asText());
 		AuthManager.authenticateClient(comm, new NativeAuthPlugin(), input);
 
 		// If everything completed successfully, the flow is complete and we can

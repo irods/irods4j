@@ -41,12 +41,14 @@ class NativeAuthenticationTest {
 
 	@Test
 	void testNativeAuthentication() {
-		assertDoesNotThrow(() -> IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password));
+		assertDoesNotThrow(() -> IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(),
+				NativeAuthPlugin.initAuthArguments(password, 0L)));
 	}
 
 	@Test
 	void testAuthenticateAsAnonymousUser() {
-		assertDoesNotThrow(() -> IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password));
+		assertDoesNotThrow(() -> IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(),
+				NativeAuthPlugin.initAuthArguments(password, 0L)));
 
 		// Add the anonymous user to the system if not present.
 		IRODSUsers.User anonymousUser = new IRODSUsers.User("anonymous", Optional.of(zone));
@@ -59,10 +61,12 @@ class NativeAuthenticationTest {
 					IRODSUsers.addUser(comm, anonymousUser, IRODSUsers.UserType.RODSUSER, IRODSZones.ZoneType.LOCAL);
 				}
 
-				RcComm anonymousComm = assertDoesNotThrow(() -> IRODSApi.rcConnect(host, port, "anonymous", zone, Optional.empty(),
+				RcComm anonymousComm = assertDoesNotThrow(() -> IRODSApi.rcConnect(host, port, "anonymous", zone,
+						Optional.empty(),
 						Optional.empty(), Optional.empty(), Optional.empty()));
 				assertNotNull(anonymousComm);
-				assertDoesNotThrow(() -> IRODSApi.rcAuthenticateClient(anonymousComm, new NativeAuthPlugin(), ""));
+				assertDoesNotThrow(() -> IRODSApi.rcAuthenticateClient(anonymousComm, new NativeAuthPlugin(),
+						NativeAuthPlugin.initAuthArguments("", 0L)));
 				assertDoesNotThrow(() -> IRODSApi.rcDisconnect(anonymousComm));
 			} finally {
 				if (removeAnonymousUser) {

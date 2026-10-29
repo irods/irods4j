@@ -48,7 +48,7 @@ class IRODSReplicasTest {
 
 		conn = new IRODSConnection();
 		conn.connect(host, port, new QualifiedUsername(username, zone));
-		conn.authenticate(new NativeAuthPlugin(), password);
+		conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 	}
 
 	@AfterAll
@@ -77,7 +77,7 @@ class IRODSReplicasTest {
 			// Create a new data object as the rodsuser.
 			try (IRODSConnection rodsuserConn = new IRODSConnection()) {
 				rodsuserConn.connect(host, port, new QualifiedUsername(rodsuser.name, rodsuser.zone));
-				rodsuserConn.authenticate(new NativeAuthPlugin(), prop.value);
+				rodsuserConn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(prop.value, 0L));
 
 				try (IRODSDataObjectStream stream = new IRODSDataObjectStream()) {
 					stream.open(rodsuserConn.getRcComm(), logicalPath,
@@ -102,7 +102,7 @@ class IRODSReplicasTest {
 		} finally {
 			try (IRODSConnection rodsuserConn = new IRODSConnection()) {
 				rodsuserConn.connect(host, port, new QualifiedUsername(rodsuser.name, rodsuser.zone));
-				rodsuserConn.authenticate(new NativeAuthPlugin(), rodsuserPassword);
+				rodsuserConn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(rodsuserPassword, 0L));
 				IRODSFilesystem.remove(rodsuserConn.getRcComm(), logicalPath, RemoveOptions.NO_TRASH);
 			} catch (Exception e) {
 				log.error(e.getMessage());

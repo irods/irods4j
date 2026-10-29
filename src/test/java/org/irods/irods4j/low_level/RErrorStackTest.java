@@ -34,7 +34,7 @@ class RErrorStackTest {
 
 		conn = new IRODSConnection();
 		conn.connect(host, port, new QualifiedUsername(username, zone));
-		conn.authenticate(new NativeAuthPlugin(), password);
+		conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 	}
 
 	@AfterAll

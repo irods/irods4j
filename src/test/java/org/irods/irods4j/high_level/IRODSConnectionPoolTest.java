@@ -55,7 +55,7 @@ class IRODSConnectionPoolTest {
 		// Create a rodsuser for testing proxied connections.
 		try (IRODSConnection conn = new IRODSConnection()) {
 			conn.connect(host, port, new QualifiedUsername(adminUsername, zone));
-			conn.authenticate(new NativeAuthPlugin(), adminPassword);
+			conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 			IRODSApi.RcComm comm = conn.getRcComm();
 			User user = new User(clientUsername, Optional.of(zone));
 			IRODSUsers.addUser(comm, user, UserType.RODSUSER, ZoneType.LOCAL);
@@ -64,7 +64,7 @@ class IRODSConnectionPoolTest {
 		// Create a data object using the rodsuser.
 		try (IRODSConnection conn = new IRODSConnection()) {
 			conn.connect(host, port, new QualifiedUsername(adminUsername, zone), new QualifiedUsername(clientUsername, zone));
-			conn.authenticate(new NativeAuthPlugin(), adminPassword);
+			conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 			try (IRODSDataObjectOutputStream out = new IRODSDataObjectOutputStream(conn.getRcComm(), clientUserDataObject, true, false)) {
 				out.write("test data".getBytes(StandardCharsets.UTF_8));
 			}
@@ -79,14 +79,14 @@ class IRODSConnectionPoolTest {
 		// Remove the rodsuser's data object.
 		try (IRODSConnection conn = new IRODSConnection()) {
 			conn.connect(host, port, new QualifiedUsername(adminUsername, zone), new QualifiedUsername(clientUsername, zone));
-			conn.authenticate(new NativeAuthPlugin(), adminUsername);
+			conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 			IRODSFilesystem.remove(conn.getRcComm(), clientUserDataObject, RemoveOptions.NO_TRASH);
 		}
 
 		// Remove the rodsuser.
 		try (IRODSConnection conn = new IRODSConnection()) {
 			conn.connect(host, port, new QualifiedUsername(adminUsername, zone));
-			conn.authenticate(new NativeAuthPlugin(), adminUsername);
+			conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 			User user = new User(clientUsername, Optional.of(zone));
 			IRODSUsers.removeUser(conn.getRcComm(), user);
 		}
@@ -97,7 +97,7 @@ class IRODSConnectionPoolTest {
 		try (IRODSConnectionPool pool = new IRODSConnectionPool(10)) {
 			pool.start(host, port, new QualifiedUsername(adminUsername, zone), comm -> {
 				try {
-					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), adminPassword);
+					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 
 					// Returning true lets the connection pool know that authentication was
 					// successful.
@@ -129,7 +129,7 @@ class IRODSConnectionPoolTest {
 			// Use the thread pool to speed up the connection process.
 			pool.start(threadPool, host, port, new QualifiedUsername(adminUsername, zone), comm -> {
 				try {
-					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), adminPassword);
+					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 
 					// Returning true lets the connection pool know that authentication was
 					// successful.
@@ -160,7 +160,7 @@ class IRODSConnectionPoolTest {
 			try (IRODSConnectionPool pool = new IRODSConnectionPool(1)) {
 				pool.start("INVALID_HOST", port, new QualifiedUsername(adminUsername, zone), comm -> {
 					try {
-						IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), adminPassword);
+						IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 						return true;
 					} catch (Exception e) {
 						return false;
@@ -176,7 +176,7 @@ class IRODSConnectionPoolTest {
 			try (IRODSConnectionPool pool = new IRODSConnectionPool(1)) {
 				pool.start(host, 9000, new QualifiedUsername(adminUsername, zone), comm -> {
 					try {
-						IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), adminPassword);
+						IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 						return true;
 					} catch (Exception e) {
 						return false;
@@ -192,7 +192,7 @@ class IRODSConnectionPoolTest {
 			try (IRODSConnectionPool pool = new IRODSConnectionPool(1)) {
 				pool.start(host, port, new QualifiedUsername(adminUsername, zone), comm -> {
 					try {
-						IRODSApi.rcAuthenticateClient(comm, null, adminPassword);
+						IRODSApi.rcAuthenticateClient(comm, null, NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 						return true;
 					} catch (Exception e) {
 						return false;
@@ -210,7 +210,7 @@ class IRODSConnectionPoolTest {
 		try (IRODSConnectionPool pool = new IRODSConnectionPool(5)) {
 			pool.start(host, port, proxyUser, clientUser, comm -> {
 				try {
-					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), adminPassword);
+					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 					return true;
 				} catch (Exception e) {
 					return false;
@@ -237,7 +237,7 @@ class IRODSConnectionPoolTest {
 		try (IRODSConnectionPool pool = new IRODSConnectionPool(10)) {
 			pool.start(threadPool, host, port, proxyUser, clientUser, comm -> {
 				try {
-					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), adminPassword);
+					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 					return true;
 				} catch (Exception e) {
 					return false;
@@ -263,7 +263,7 @@ class IRODSConnectionPoolTest {
 			try (IRODSConnectionPool pool = new IRODSConnectionPool(3)) {
 				pool.start(host, port, null, new QualifiedUsername(adminUsername, zone), comm -> {
 					try {
-						IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), adminPassword);
+						IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 						return true;
 					} catch (Exception e) {
 						return false;
@@ -282,7 +282,7 @@ class IRODSConnectionPoolTest {
 			try (IRODSConnectionPool pool = new IRODSConnectionPool(1)) {
 				pool.start("INVALID_HOST", port, proxyUser, clientUser, comm -> {
 					try {
-						IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), adminPassword);
+						IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 						return true;
 					} catch (Exception e) {
 						return false;
@@ -300,7 +300,7 @@ class IRODSConnectionPoolTest {
 		try (IRODSConnectionPool pool = new IRODSConnectionPool(2)) {
 			pool.start(host, port, proxyUser, clientUser, comm -> {
 				try {
-					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), adminPassword);
+					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 					return true;
 				} catch (Exception e) {
 					return false;
@@ -332,7 +332,7 @@ class IRODSConnectionPoolTest {
 		try (IRODSConnectionPool pool = new IRODSConnectionPool(2)) {
 			pool.start(host, port, adminUser, comm -> {
 				try {
-					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), adminPassword);
+					IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(adminPassword, 0L));
 					return true;
 				} catch (Exception e) {
 					return false;

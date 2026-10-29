@@ -1,9 +1,7 @@
 package org.irods.irods4j.low_level;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.irods.irods4j.authentication.AuthManager;
 import org.irods.irods4j.authentication.AuthPlugin;
 import org.irods.irods4j.authentication.IRODSAuthPlugin;
 import org.irods.irods4j.common.JsonUtil;
@@ -82,7 +80,7 @@ public class IRODSAuthenticationTest {
 			boolean authSchemeSupported = Versioning.compareVersions(serverVersion, "5.1.0") >= 0;
 			assumeTrue(authSchemeSupported, "Requires server running iRODS 5.1.0 or later");
 
-			conn.authenticate(authPlugin, password);
+			conn.authenticate(authPlugin, IRODSAuthPlugin.initAuthArguments(new IRODSAuthPlugin.Password(password)));
 		}
 
 		assertNotNull(sessionTokenRef.value);
@@ -93,17 +91,15 @@ public class IRODSAuthenticationTest {
 		// over a new connection.
 		try (IRODSConnection conn = new IRODSConnection(options)) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			ObjectNode input = JsonUtil.getJsonMapper().createObjectNode();
-			input.put("session_token", sessionTokenRef.value);
-			assertDoesNotThrow(() -> AuthManager.authenticateClient(conn.getRcComm(), authPlugin, input));
+			conn.authenticate(authPlugin,
+					IRODSAuthPlugin.initAuthArguments(new IRODSAuthPlugin.SessionToken(sessionTokenRef.value)));
 		}
 
 		// Show that the server rejects an invalid session token.
 		try (IRODSConnection conn = new IRODSConnection(options)) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			ObjectNode input = JsonUtil.getJsonMapper().createObjectNode();
-			input.put("session_token", "invalid-token");
-			IRODSException e = assertThrows(IRODSException.class, () -> AuthManager.authenticateClient(conn.getRcComm(), authPlugin, input));
+			IRODSException e = assertThrows(IRODSException.class, () -> conn.authenticate(authPlugin,
+					IRODSAuthPlugin.initAuthArguments(new IRODSAuthPlugin.SessionToken("invalid-token"))));
 			assertTrue(e.getErrorCode() < 0);
 		}
 	}

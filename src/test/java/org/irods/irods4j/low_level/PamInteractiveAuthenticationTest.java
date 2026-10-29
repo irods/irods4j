@@ -18,6 +18,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -94,7 +95,7 @@ class PamInteractiveAuthenticationTest {
             };
 
             conn.connect(host, port, new QualifiedUsername(username, zone));
-            conn.authenticate(new PamInteractiveAuthPlugin(requireSecureConnection, getInput, getPassword), "");
+            conn.authenticate(new PamInteractiveAuthPlugin(requireSecureConnection, getInput, getPassword), new HashMap<>());
         }
     }
 
@@ -141,7 +142,7 @@ class PamInteractiveAuthenticationTest {
 
             conn.connect(host, port, new QualifiedUsername(username, zone));
             PamInteractiveAuthPlugin plugin = new PamInteractiveAuthPlugin(requireSecureConnection, getInput, getPassword);
-            IRODSException e = assertThrows(IRODSException.class, () -> conn.authenticate(plugin, ""));
+            IRODSException e = assertThrows(IRODSException.class, () -> conn.authenticate(plugin, new HashMap<>()));
             assertEquals(IRODSErrorCodes.CAT_INVALID_AUTHENTICATION, e.getErrorCode());
         }
     }
