@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.net.ssl.SSLContext;
@@ -18,6 +19,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.authentication.AuthManager;
@@ -631,11 +633,32 @@ public class IRODSApi {
 		}
 	}
 
-	public static void rcAuthenticateClient(RcComm comm, AuthPlugin authPlugin, String password) throws Exception {
-		var input = JsonUtil.getJsonMapper().createObjectNode();
-		input.put("password", password);
-		input.put(AuthPlugin.AUTH_TTL_KEY, "0"); // TODO Expose this option and others.
-		AuthManager.authenticateClient(comm, authPlugin, input);
+	/**
+	 * Performs authentication with an iRODS server.
+	 *
+	 * @param comm       The {@link RcComm} used to communicate with the server.
+	 * @param authPlugin The plugin used for authenticating with the server. Default
+	 *                   plugins include:
+	 *                   <ul>
+	 *                   	<li>{@link org.irods.irods4j.authentication.NativeAuthPlugin}</li>
+	 *                   	<li>{@link org.irods.irods4j.authentication.PamPasswordAuthPlugin}</li>
+	 *                   	<li>{@link org.irods.irods4j.authentication.PamInteractiveAuthPlugin}</li>
+	 *                   	<li>{@link org.irods.irods4j.authentication.IRODSAuthPlugin}</li>
+	 *                   </ul>
+	 * @param input      The credentials and options for authentication. Some authentication
+	 *                   plugins provided by this library provide a convenience function
+	 *                   by the name {@code initAuthArguments} to aid in producing input
+	 *                   sufficient for this parameter.
+	 * @throws Exception If authentication fails, a network error occurs, or one
+	 *                   or more inputs are null.
+	 *
+	 * @since 0.1.0
+	 */
+	public static void rcAuthenticateClient(RcComm comm, AuthPlugin authPlugin, Map<String, Object> input) throws Exception {
+		var mapper = JsonUtil.getJsonMapper();
+		var jsonInput = mapper.createObjectNode();
+		jsonInput.setAll((ObjectNode) mapper.valueToTree(input));
+		AuthManager.authenticateClient(comm, authPlugin, jsonInput);
 	}
 
 	public static int rcObjStat(RcComm comm, DataObjInp_PI input, Reference<RodsObjStat_PI> output) throws IOException {

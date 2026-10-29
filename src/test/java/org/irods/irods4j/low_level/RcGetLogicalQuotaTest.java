@@ -44,7 +44,7 @@ public class RcGetLogicalQuotaTest {
 
 		try (var conn = new IRODSConnection()) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			conn.authenticate(new NativeAuthPlugin(), password);
+			conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 
 			var serverVersion = conn.getRcComm().relVersion.substring(4);
 			var authSchemeSupported = Versioning.compareVersions(serverVersion, "5.1.0") >= 0;
@@ -62,7 +62,7 @@ public class RcGetLogicalQuotaTest {
 	static void tearDownAfterClass() throws Exception {
 		try (var conn = new IRODSConnection()) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			conn.authenticate(new NativeAuthPlugin(), password);
+			conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 
 			var serverVersion = conn.getRcComm().relVersion.substring(4);
 			var authSchemeSupported = Versioning.compareVersions(serverVersion, "5.1.0") >= 0;
@@ -91,7 +91,7 @@ public class RcGetLogicalQuotaTest {
 
 		try (var conn = new IRODSConnection()) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			conn.authenticate(new NativeAuthPlugin(), password);
+			conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 
 			var serverVersion = conn.getRcComm().relVersion.substring(4);
 			var authSchemeSupported = Versioning.compareVersions(serverVersion, "5.1.0") >= 0;
@@ -173,7 +173,7 @@ public class RcGetLogicalQuotaTest {
 	void testRcGetLogicalQuotaReturnsNoInfoAboutUnmonitoredCollection() throws Exception {
 		try (var conn = new IRODSConnection()) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			conn.authenticate(new NativeAuthPlugin(), password);
+			conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 
 			var serverVersion = conn.getRcComm().relVersion.substring(4);
 			var authSchemeSupported = Versioning.compareVersions(serverVersion, "5.1.0") >= 0;

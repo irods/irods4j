@@ -67,14 +67,14 @@ class IRODSConnectionTest {
 	void testConnectAuthenticateAndDisconnect() throws Exception {
 		var conn = new IRODSConnection();
 		conn.connect(host, port, new QualifiedUsername(username, zone));
-		conn.authenticate(new NativeAuthPlugin(), password);
+		conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 		conn.disconnect();
 	}
 
 	static IRODSConnection connectUsingTryWithResources() throws Exception {
 		try (var conn = new IRODSConnection()) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			conn.authenticate(new NativeAuthPlugin(), password);
+			conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 			return conn;
 		}
 	}
@@ -103,7 +103,7 @@ class IRODSConnectionTest {
 	void testConnectingViaAProxyUser() throws Exception {
 		try (var adminConn = new IRODSConnection()) {
 			adminConn.connect(host, port, new QualifiedUsername(username, zone));
-			adminConn.authenticate(new NativeAuthPlugin(), password);
+			adminConn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 			assertTrue(adminConn.isConnected());
 
 			// Create a new user. We don't need to set a password for the user because we
@@ -116,7 +116,7 @@ class IRODSConnectionTest {
 				var proxyUser = new QualifiedUsername(username, zone);
 				var clientUser = new QualifiedUsername(testUser.name, testUser.zone);
 				conn.connect(host, port, proxyUser, clientUser);
-				conn.authenticate(new NativeAuthPlugin(), password);
+				conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 				assertTrue(conn.isConnected());
 
 				// Stat the admin's home collection. This will fail due to the test user not
@@ -167,7 +167,7 @@ class IRODSConnectionTest {
 
 		try (var conn = new IRODSConnection(connOptions)) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			conn.authenticate(new NativeAuthPlugin(), password);
+			conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 			assertTrue(conn.isConnected());
 		}
 	}

@@ -49,7 +49,7 @@ class IRODSCollectionIteratorTest {
 
 		conn = new IRODSConnection();
 		conn.connect(host, port, new QualifiedUsername(username, zone));
-		conn.authenticate(new NativeAuthPlugin(), password);
+		conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 	}
 
 	@AfterAll
@@ -132,7 +132,7 @@ class IRODSCollectionIteratorTest {
 			// Reconnect to the server so the agent sees the new resources.
 			conn.disconnect();
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			conn.authenticate(new NativeAuthPlugin(), password);
+			conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 
 			// Create multiple data objects and replicate them to the new resources.
 			IRODSFilesystem.createCollection(conn.getRcComm(), sandbox);

@@ -1,6 +1,7 @@
 package org.irods.irods4j.high_level.connection;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 
 import org.irods.irods4j.authentication.AuthPlugin;
@@ -141,15 +142,16 @@ public class IRODSConnection implements AutoCloseable {
 	 * Performs authentication.
 	 * 
 	 * @param authPlugin The authentication plugin to use.
-	 * @param password   The password of the proxy user (if defined), or the client
-	 *                   user.
+	 * @param input      The container holding credentials and options for
+	 *                   authentication. See {@link IRODSApi#rcAuthenticateClient}
+	 *                   for more information.
 	 * 
 	 * @throws Exception If an error occurs.
 	 * 
 	 * @since 0.1.0
 	 */
-	public void authenticate(AuthPlugin authPlugin, String password) throws Exception {
-		IRODSApi.rcAuthenticateClient(comm, authPlugin, password);
+	public void authenticate(AuthPlugin authPlugin, Map<String, Object> input) throws Exception {
+		IRODSApi.rcAuthenticateClient(comm, authPlugin, input);
 	}
 
 	/**

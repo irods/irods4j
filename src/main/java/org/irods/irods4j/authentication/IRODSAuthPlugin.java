@@ -5,10 +5,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.common.Reference;
+import org.irods.irods4j.input_validation.Preconditions;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.api.IRODSException;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class implements the irods authentication scheme.
@@ -72,6 +75,84 @@ public class IRODSAuthPlugin extends AuthPlugin {
 	@Override
 	public String getName() {
 		return "irods";
+	}
+
+	/**
+	 * This class is a container meant for storing a password string.
+	 * <p>
+	 * It is a support class designed for use with {@link IRODSAuthPlugin#initAuthArguments}.
+	 *
+	 * @since 0.8.0
+	 */
+	public static final class Password {
+
+		String value;
+
+		/**
+		 * Constructs a new Password instance.
+		 *
+		 * @param value The password string.
+		 */
+		public Password(String value) {
+			Preconditions.notNull(value, "String is null");
+			this.value = value;
+		}
+
+	}
+
+	/**
+	 * This class is a container meant for storing a session token string.
+	 * <p>
+	 * It is a support class designed for use with {@link IRODSAuthPlugin#initAuthArguments}.
+	 *
+	 * @since 0.8.0
+	 */
+	public static final class SessionToken {
+
+		String value;
+
+		/**
+		 * Constructs a new SessionToken instance.
+		 *
+		 * @param value The session token string.
+		 */
+		public SessionToken(String value) {
+			Preconditions.notNull(value, "String is null");
+			this.value = value;
+		}
+
+	}
+
+	/**
+	 * Constructs a container holding the minimum set of inputs needed for
+	 * password-based authentication via
+	 * {@link org.irods.irods4j.low_level.api.IRODSApi#rcAuthenticateClient}.
+	 *
+	 * @param password The password of the proxy user or client user.
+	 * @return The container holding the input arguments.
+	 *
+	 * @since 0.8.0
+	 */
+	public static Map<String, Object> initAuthArguments(Password password) {
+		var input = new HashMap<String, Object>();
+		input.put(KW_PASSWORD, password.value);
+		return input;
+	}
+
+	/**
+	 * Constructs a container holding the minimum set of inputs needed for
+	 * session-token-based authentication via
+	 * {@link org.irods.irods4j.low_level.api.IRODSApi#rcAuthenticateClient}.
+	 *
+	 * @param sessionToken The password of the proxy user or client user.
+	 * @return The container holding the input arguments.
+	 *
+	 * @since 0.8.0
+	 */
+	public static Map<String, Object> initAuthArguments(SessionToken sessionToken) {
+		var input = new HashMap<String, Object>();
+		input.put(KW_SESSION_TOKEN, sessionToken.value);
+		return input;
 	}
 
 	@Override

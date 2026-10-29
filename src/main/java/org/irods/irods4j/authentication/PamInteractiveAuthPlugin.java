@@ -123,9 +123,6 @@ public class PamInteractiveAuthPlugin extends AuthPlugin {
 		resp.put("user_name", comm.proxyUsername);
 		resp.put("zone_name", comm.proxyUserZone);
 
-		// DO NOT leak the user's password!
-		resp.remove("password");
-
 		return resp;
 	}
 
@@ -265,7 +262,7 @@ public class PamInteractiveAuthPlugin extends AuthPlugin {
 		// Authenticate using the native authentication and the server generated
 		// password mapped to "request_result".
 		var input = JsonUtil.getJsonMapper().createObjectNode();
-		input.put("password", resp.get("request_result").asText());
+		input.put(AUTH_PASSWORD_KEY, resp.get("request_result").asText());
 		AuthManager.authenticateClient(comm, new NativeAuthPlugin(), input);
 
 		// If everything completed successfully, the flow is complete, and we can

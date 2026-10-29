@@ -31,7 +31,7 @@ class RcSwitchUserTest {
 		comm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.empty());
 		assertNotNull(comm);
-		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
+		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 	}
 
 	@AfterAll
@@ -80,7 +80,7 @@ class RcSwitchUserTest {
 		var adminComm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(),
 				Optional.empty(), Optional.empty());
 		assertNotNull(adminComm);
-		IRODSApi.rcAuthenticateClient(adminComm, new NativeAuthPlugin(), password);
+		IRODSApi.rcAuthenticateClient(adminComm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 
 		// Remove the rodsuser.
 		var removeUserInput = new GeneralAdminInp_PI();

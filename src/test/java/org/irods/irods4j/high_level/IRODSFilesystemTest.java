@@ -2,7 +2,6 @@ package org.irods.irods4j.high_level;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -47,7 +46,7 @@ class IRODSFilesystemTest {
 
 		conn = new IRODSConnection();
 		conn.connect(host, port, new QualifiedUsername(username, zone));
-		conn.authenticate(new NativeAuthPlugin(), password);
+		conn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 	}
 
 	@AfterAll

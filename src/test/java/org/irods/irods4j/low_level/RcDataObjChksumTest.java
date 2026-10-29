@@ -40,7 +40,7 @@ class RcDataObjChksumTest {
 		comm = IRODSApi.rcConnect(host, port, username, zone, Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.empty());
 		assertNotNull(comm);
-		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), password);
+		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
 
 		dataObjPath = '/' + String.join("/", zone, "home", username, "createdByTestDataObjChksumSuite.txt");
 

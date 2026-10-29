@@ -66,7 +66,9 @@ class PamPasswordAuthenticationTest {
 
 		try (var conn = new IRODSConnection(options)) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
-			conn.authenticate(new PamPasswordAuthPlugin(true), password);
+
+			var input = PamPasswordAuthPlugin.createInputMapping(password, 0L);
+			conn.authenticate(new PamPasswordAuthPlugin(true), input);
 		}
 	}
 
