@@ -1038,9 +1038,8 @@ public class IRODSApi {
 	}
 
 	// TODO This API is not used in server at all. We should probably deprecate it
-	// or remove
-	// it from the public interface. Consider removing this.
-	private static int rcRegDataOb(RcComm comm, DataObjInfo_PI input, Reference<DataObjInfo_PI> output)
+	// or remove it from the public interface. Consider removing this.
+	private static int rcRegDataObj(RcComm comm, DataObjInfo_PI input, Reference<DataObjInfo_PI> output)
 			throws IOException {
 		sendApiRequest(comm.sout, 619, input);
 		return receiveServerResponse(comm, DataObjInfo_PI.class, output, null);
