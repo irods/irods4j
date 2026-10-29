@@ -12,6 +12,6 @@ public class ModAVUMetadataInp_PI {
 	public String arg7;
 	public String arg8;
 	public String arg9;
-	public KeyValPair_PI KeyValPair_PI ;
+	public KeyValPair_PI KeyValPair_PI;
 
 }

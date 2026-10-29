@@ -296,7 +296,8 @@ public class IRODSApi {
 	}
 
 	public static RcComm rcConnect(String host, int port, String clientUsername, String clientUserZone,
-								   Optional<String> proxyUsername, Optional<String> proxyUserZone, Optional<ConnectionOptions> options,
+								   Optional<String> proxyUsername, Optional<String> proxyUserZone,
+								   Optional<ConnectionOptions> options,
 								   Optional<RErrMsg_PI> errorInfo) throws Exception {
 		if (null == host || host.isEmpty()) {
 			throw new IllegalArgumentException("Host is null or empty");
@@ -809,7 +810,7 @@ public class IRODSApi {
 			comm.clientUserZone = input.zone;
 
 			if (null != input.KeyValPair_PI && input.KeyValPair_PI.ssLen > 0
-					&& input.KeyValPair_PI.keyWord.contains(SwitchUserInp_PI.KW_SWITCH_PROXY_USER)) {
+				&& input.KeyValPair_PI.keyWord.contains(SwitchUserInp_PI.KW_SWITCH_PROXY_USER)) {
 				comm.proxyUsername = input.username;
 				comm.proxyUserZone = input.zone;
 			}
