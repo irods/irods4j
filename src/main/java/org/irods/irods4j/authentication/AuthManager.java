@@ -35,7 +35,7 @@ public class AuthManager {
 		while (true) {
 			JsonNode resp = authPlugin.execute(comm, nextOp, req);
 			if (log.isTraceEnabled()) {
-				log.trace("Server response = {}", JsonUtil.toJsonString(resp));
+				log.trace("Plugin response = {}", JsonUtil.toJsonString(resp));
 			}
 
 			if (comm.loggedIn) {
