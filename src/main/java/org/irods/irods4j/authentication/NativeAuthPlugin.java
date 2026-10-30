@@ -44,7 +44,7 @@ public class NativeAuthPlugin extends AuthPlugin {
 	private JsonNode establishContext(RcComm comm, JsonNode context) throws NoSuchAlgorithmException {
 		ObjectNode resp = (ObjectNode) context.deepCopy();
 
-		String requestResult = ((ObjectNode) context).get("request_result").asText();
+		String requestResult = context.get("request_result").asText();
 		StringBuilder requestResultSb = new StringBuilder();
 		requestResultSb.append(requestResult);
 
