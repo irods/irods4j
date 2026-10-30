@@ -108,8 +108,19 @@ public class NativeAuthPlugin extends AuthPlugin {
 		ObjectNode req = (ObjectNode) context.deepCopy();
 		req.put(AUTH_NEXT_OPERATION, AUTH_AGENT_AUTH_REQUEST);
 
-		JsonNode resp = request(comm, req);
-		((ObjectNode) resp).put(AUTH_NEXT_OPERATION, AUTH_ESTABLISH_CONTEXT);
+		// Do not transmit the password in the request to the server if it was supplied.
+		// This plugin does not require secure communication, so we cannot transmit the
+		// password in the clear. Copy the password and remove it from the request. It
+		// will be restored later.
+		JsonNode passwordNode = req.remove(AUTH_PASSWORD_KEY);
+
+		ObjectNode resp = (ObjectNode) request(comm, req);
+		resp.put(AUTH_NEXT_OPERATION, AUTH_ESTABLISH_CONTEXT);
+
+		// If a password was provided, restore it here.
+		if (null != passwordNode) {
+			resp.put(AUTH_PASSWORD_KEY, passwordNode.asText());
+		}
 
 		return resp;
 	}
