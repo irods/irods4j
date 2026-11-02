@@ -1079,8 +1079,7 @@ public class IRODSApi {
 	}
 
 	public static int rcGetLogicalQuota(RcComm comm, GetLogicalQuotaInp_PI input,
-										Reference<LogicalQuotaList_PI> output)
-			throws IOException {
+										Reference<LogicalQuotaList_PI> output) throws IOException {
 		sendApiRequest(comm.sout, 803, input);
 		return receiveServerResponse(comm, LogicalQuotaList_PI.class, output, null);
 	}
