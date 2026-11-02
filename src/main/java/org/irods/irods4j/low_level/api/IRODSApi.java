@@ -46,6 +46,8 @@ import org.irods.irods4j.low_level.protocol.packing_instructions.GenQueryInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.GenQueryOut_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.GeneralAdminInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.Genquery2Input_PI;
+import org.irods.irods4j.low_level.protocol.packing_instructions.GetLimitedPasswordInp_PI;
+import org.irods.irods4j.low_level.protocol.packing_instructions.GetLimitedPasswordOut_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.GetLogicalQuotaInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.GridConfigurationInp_PI;
 import org.irods.irods4j.low_level.protocol.packing_instructions.GridConfigurationOut_PI;
@@ -1084,6 +1086,12 @@ public class IRODSApi {
 										Reference<LogicalQuotaList_PI> output) throws IOException {
 		sendApiRequest(comm.sout, 803, input);
 		return receiveServerResponse(comm, LogicalQuotaList_PI.class, output, null);
+	}
+
+	public static int rcGetLimitedPassword(RcComm comm, GetLimitedPasswordInp_PI input,
+										   Reference<GetLimitedPasswordOut_PI> output) throws IOException {
+		sendApiRequest(comm.sout, 726, input);
+		return receiveServerResponse(comm, GetLimitedPasswordOut_PI.class, output, null);
 	}
 
 }
