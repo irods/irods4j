@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.irods.irods4j.common.JsonUtil;
+import org.irods.irods4j.common.Obfuscation;
 import org.irods.irods4j.common.Reference;
 import org.irods.irods4j.common.Versioning;
 import org.irods.irods4j.high_level.administration.IRODSZones.ZoneType;
@@ -421,7 +422,7 @@ public class IRODSUsers {
 			// TODO Don't rely on obfuscation. Allow clients to send plaintext passwords in
 			// the clear. Open an issue in irods/irods for this - assuming we don't have an
 			// issue already.
-			input.arg4 = obfuscatePassword(p, comm.hashAlgorithm);
+			input.arg4 = Obfuscation.obfuscatePassword(p.value, p.requesterPassword, comm.hashAlgorithm);
 		} else if (property instanceof UserTypeProperty) {
 			UserTypeProperty p = (UserTypeProperty) property;
 			input.arg3 = "type";
@@ -1061,153 +1062,6 @@ public class IRODSUsers {
 		});
 
 		return !userIds.isEmpty();
-	}
-
-	private static String obfuscatePassword(UserPasswordProperty p, String hashAlgo) throws NoSuchAlgorithmException {
-		final int MAX_PASSWORD_LEN = 50;
-
-		StringBuilder plainTextPasswordSb = new StringBuilder();
-		plainTextPasswordSb.append(p.value);
-		plainTextPasswordSb.setLength(MAX_PASSWORD_LEN + 10);
-
-		int count = MAX_PASSWORD_LEN - 10 - p.value.getBytes(StandardCharsets.UTF_8).length;
-		if (count > 15) {
-			// The random sequence of characters is used for padding and must match
-			// what is defined on the server-side.
-			plainTextPasswordSb.append("1gCBizHWbwIYyWLoysGzTe6SyzqFKMniZX05faZHWAwQKXf6Fs".substring(0, count));
-		}
-
-		StringBuilder keySb = new StringBuilder();
-		if (p.requesterPassword.getBytes(StandardCharsets.UTF_8).length >= MAX_PASSWORD_LEN) {
-			throw new IllegalArgumentException("Requester password exceeds max key size: " + MAX_PASSWORD_LEN);
-		}
-		keySb.append(p.requesterPassword.substring(0, Math.min(p.requesterPassword.getBytes(StandardCharsets.UTF_8).length, MAX_PASSWORD_LEN)));
-
-		return obfEncodeByKey(plainTextPasswordSb.toString(), keySb.toString(), hashAlgo);
-	}
-
-	// This function is a port of obfEncodeByKey() in
-	// irods/irods/lib/core/src/obf.cpp.
-	private static String obfEncodeByKey(String data, String key, String hashAlgo) throws NoSuchAlgorithmException {
-//		var keyBuf = new int[100 + 1]; // +1 for null terminating byte.
-//		var keyBytes = key.getBytes(StandardCharsets.UTF_8);
-//		var length = Math.min(keyBuf.length - 1, key.getBytes(StandardCharsets.UTF_8).length);
-//		for (int x = 0; x < length; ++x) {
-//			keyBuf[x] = (int) (keyBytes[x] & 0xff);
-//		}
-		int[] keyBuf = new int[100];
-		byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
-		int length = Math.min(keyBuf.length, key.getBytes(StandardCharsets.UTF_8).length);
-		for (int x = 0; x < length; ++x) {
-			keyBuf[x] = keyBytes[x] & 0xff;
-		}
-
-		// TODO Must also support SHA1.
-		// Get the MD5 digest of the key to get some bytes with many different values.
-//		var hexKey = obfMakeOneWayHash("md5", keyBuf, keyBuf.length - 1);
-//		var buffer = new int[64 + 1]; // Each digest is 16 bytes, 4 of them.
-		byte[] hexKey = obfMakeOneWayHash(hashAlgo, keyBuf, keyBuf.length);
-		int[] buffer = new int[64]; // Each digest is 16 bytes, 4 of them.
-		copyIntArrayToByteArray(buffer, 0, hexKey, hexKey.length);
-
-		// Hash of the hash.
-		byte[] v = obfMakeOneWayHash(hashAlgo, buffer, 16);
-		copyIntArrayToByteArray(buffer, 16, v, v.length);
-
-		// Hash of two hashes.
-		v = obfMakeOneWayHash(hashAlgo, buffer, 32);
-		copyIntArrayToByteArray(buffer, 32, v, v.length);
-
-		// Hash of two hashes.
-		v = obfMakeOneWayHash(hashAlgo, buffer, 32);
-		copyIntArrayToByteArray(buffer, 48, v, v.length);
-
-		final int MAX_PASSWORD_LEN = 50;
-
-		StringBuilder inSb = new StringBuilder(data);
-		inSb.setLength(MAX_PASSWORD_LEN + 10);
-
-		StringBuilder outSb = new StringBuilder();
-		outSb.setLength(MAX_PASSWORD_LEN + 100);
-
-		// TODO
-//		if (HASH_ALGO_SHA1 == defaultHashAlgo) {
-//			inSb.setCharAt(cpOut++, 's');
-//			inSb.setCharAt(cpOut++, 'h');
-//			inSb.setCharAt(cpOut++, 'a');
-//			inSb.setCharAt(cpOut++, '1');
-//		}
-
-		int[] wheel = new int[26 + 26 + 10 + 15];
-		int j = 0;
-		for (int i = 0; i < 10; ++i) {
-			wheel[j++] = (int) '0' + i;
-		}
-		for (int i = 0; i < 26; ++i) {
-			wheel[j++] = (int) 'A' + i;
-		}
-		for (int i = 0; i < 26; ++i) {
-			wheel[j++] = (int) 'a' + i;
-		}
-		for (int i = 0; i < 15; ++i) {
-			wheel[j++] = (int) '!' + i;
-		}
-
-		int cpKey = 0;
-		int pc = 0; // Previous character.
-		for (int cpIn = 0, cpOut = 0;; ++cpIn) {
-			int k = buffer[cpKey++];
-			if (cpKey > 60) {
-				cpKey = 0;
-			}
-
-			boolean found = false;
-			for (int i = 0; i < wheel.length; ++i) {
-				if ((int) inSb.charAt(cpIn) == wheel[i]) {
-					j = i + k + pc;
-					j %= wheel.length;
-					outSb.setCharAt(cpOut++, (char) (wheel[j] & 0xff));
-
-					// "cipherBlockChaining" is not supported by this implementation. Based on the C
-					// implementation, it is only enabled through use of functions which are not
-					// supported by this implementation, therefore it is irrelevant.
-//					if (cipherBlockChaining) {
-//						pc = cpOut - 1;
-//					}
-
-					found = true;
-					break;
-				}
-			}
-
-			if (!found) {
-				if (inSb.charAt(cpIn) == 0) {
-					outSb.setLength(cpOut);
-					return outSb.toString();
-				} else {
-					outSb.setCharAt(cpOut++, inSb.charAt(cpIn));
-				}
-			}
-		}
-	}
-
-	private static byte[] obfMakeOneWayHash(String hashAlgo, int[] buffer, int bufferLength)
-			throws NoSuchAlgorithmException {
-		// Convert int array to a unsigned byte array.
-		byte[] bufUnsigned = new byte[bufferLength];
-		for (int x = 0; x < bufferLength; ++x) {
-			bufUnsigned[x] = (byte) (buffer[x] & 0xff);
-		}
-
-		// Hash the buffer.
-		MessageDigest hasher = MessageDigest.getInstance(hashAlgo);
-		return hasher.digest(bufUnsigned);
-	}
-
-	private static void copyIntArrayToByteArray(int[] dst, int dstOffset, byte[] src, int count) {
-		for (int i = 0; i < src.length; ++i) {
-			dst[i + dstOffset] = src[i] & 0xff;
-		}
 	}
 
 }
