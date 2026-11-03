@@ -7,12 +7,15 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.common.JsonUtil;
+import org.irods.irods4j.common.Reference;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.api.IRODSException;
 
 import java.io.Console;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Function;
 
@@ -40,25 +43,15 @@ public class PamInteractiveAuthPlugin extends AuthPlugin {
 	private static final String PERFORM_NOT_AUTHENTICATED = "not_authenticated";
 	private static final String PERFORM_NATIVE_AUTH = "perform_native_auth";
 
+	// Notifies the plugin that the user has previously authenticated and
+	// provided a session token instead of their true password. This causes
+	// the plugin to perform native authentication only.
+	private static final String KW_SESSION_TOKEN = "session_token";
+
 	private boolean requireSecureConnection = true;
+	private Reference<String> sessionToken;
 	private final Function<String, String> getInputHandler;
 	private final Function<String, String> getSensitiveInputHandler;
-
-	/**
-	 * Construct a new PAM Interactive plugin instance.
-	 * <p>
-	 * All user input is read from stdin. User input containing sensitive information
-	 * is never echoed to stdout.
-	 * <p>
-	 * Spaces will be removed from non-sensitive user input.
-	 *
-	 * @param requireSecureConnection Instructs the authentication flow to fail if
-	 *                                the connection isn't secure.
-	 * @since 0.3.0
-	 */
-	public PamInteractiveAuthPlugin(boolean requireSecureConnection) {
-		this(requireSecureConnection, PamInteractiveAuthPlugin::getInputFromClientStdin, PamInteractiveAuthPlugin::getPasswordFromClientStdin);
-	}
 
 	/**
 	 * Construct a new PAM Interactive plugin instance with custom input handlers.
@@ -72,13 +65,21 @@ public class PamInteractiveAuthPlugin extends AuthPlugin {
 	 *
 	 * @param requireSecureConnection  Instructs the authentication flow to fail if the
 	 *                                 connection isn't secure.
+	 * @param sessionToken             The reference object that will contain the generated
+	 *                                 session token on success.
 	 * @param getInputHandler          The callback used for accepting non-sensitive user
 	 *                                 input. Spaces will be removed from the user input.
 	 * @param getSensitiveInputHandler The callback used for accepting sensitive user input.
 	 * @throws IllegalArgumentException If either callback parameter is null.
+	 *
 	 * @since 0.3.0
 	 */
-	public PamInteractiveAuthPlugin(boolean requireSecureConnection, Function<String, String> getInputHandler, Function<String, String> getSensitiveInputHandler) {
+	public PamInteractiveAuthPlugin(boolean requireSecureConnection, Reference<String> sessionToken, Function<String,
+			String> getInputHandler, Function<String, String> getSensitiveInputHandler) {
+		if (null == sessionToken) {
+			throw new IllegalArgumentException("sessionToken is null");
+		}
+
 		if (null == getInputHandler) {
 			throw new IllegalArgumentException("getInputHandler callback is null");
 		}
@@ -88,6 +89,7 @@ public class PamInteractiveAuthPlugin extends AuthPlugin {
 		}
 
 		this.requireSecureConnection = requireSecureConnection;
+		this.sessionToken = sessionToken;
 		this.getInputHandler = getInputHandler;
 		this.getSensitiveInputHandler = getSensitiveInputHandler;
 
@@ -106,14 +108,73 @@ public class PamInteractiveAuthPlugin extends AuthPlugin {
 		addOperation(PERFORM_NATIVE_AUTH, this::performNativeAuth);
 	}
 
+	/**
+	 * @see #PamInteractiveAuthPlugin(boolean, Reference, Function, Function)
+	 * <p>
+	 * This constructor is for cases where a valid session token is expected to be
+	 * used.
+	 *
+	 * @since 0.8.0
+	 */
+	public PamInteractiveAuthPlugin(boolean requireSecureConnection, Function<String, String> getInputHandler,
+									Function<String, String> getSensitiveInputHandler) {
+		this(requireSecureConnection, new Reference<>(), getInputHandler, getSensitiveInputHandler);
+	}
+
+	/**
+	 * Construct a new PAM Interactive plugin instance.
+	 * <p>
+	 * All user input is read from stdin. User input containing sensitive information
+	 * is never echoed to stdout.
+	 * <p>
+	 * Spaces will be removed from non-sensitive user input.
+	 *
+	 * @param requireSecureConnection Instructs the authentication flow to fail if
+	 *                                the connection isn't secure.
+	 * @param sessionToken            The reference object that will contain the generated
+	 *                                session token on success.
+	 *
+	 * @since 0.3.0
+	 */
+	public PamInteractiveAuthPlugin(boolean requireSecureConnection, Reference<String> sessionToken) {
+		this(requireSecureConnection, sessionToken, PamInteractiveAuthPlugin::getInputFromClientStdin,
+				PamInteractiveAuthPlugin::getPasswordFromClientStdin);
+	}
+
+	/**
+	 * @see #PamInteractiveAuthPlugin(boolean, Reference)
+	 * <p>
+	 * This constructor is for cases where a valid session token is expected to be
+	 * used.
+	 *
+	 * @since 0.8.0
+	 */
+	public PamInteractiveAuthPlugin(boolean requireSecureConnection) {
+		this(requireSecureConnection, new Reference<>(), PamInteractiveAuthPlugin::getInputFromClientStdin,
+				PamInteractiveAuthPlugin::getPasswordFromClientStdin);
+	}
+
 	public String getName() {
 		return "pam_interactive";
+	}
+
+	/**
+	 * Returns a map containing inputs for authenticating via
+	 * {@link org.irods.irods4j.low_level.api.IRODSApi#rcAuthenticateClient}
+	 *
+	 * @param sessionToken The authentication token for the proxy or client user.
+	 *
+	 * @since 0.8.0
+	 */
+	public static Map<String, Object> initAuthArguments(SessionToken sessionToken) {
+		Map<String, Object> input = new HashMap<>();
+		input.put(KW_SESSION_TOKEN, sessionToken.value);
+		return input;
 	}
 
 	@Override
 	public JsonNode authClientStart(RcComm comm, JsonNode context) {
 		ObjectNode resp = (ObjectNode) context.deepCopy();
-		resp.put(AUTH_NEXT_OPERATION, AUTH_CLIENT_AUTH_REQUEST);
 
 		// Initialize the persistence state of the PAM stack.
 		resp.put("pdirty", false);
@@ -123,6 +184,18 @@ public class PamInteractiveAuthPlugin extends AuthPlugin {
 		// all cases for connecting to iRODS (i.e. proxied and non-proxied connections).
 		resp.put("user_name", comm.proxyUsername);
 		resp.put("zone_name", comm.proxyUserZone);
+
+		// The C++ implementation leans on obfGetPw and the .irodsA file. irods4j does
+		// not support these mechanisms. irods4j leans on library-specific keywords to
+		// provide the same capability.
+		JsonNode sessionTokenNode = resp.get(KW_SESSION_TOKEN);
+		if (null != sessionTokenNode) {
+			sessionToken.value = sessionTokenNode.asText();
+			resp.put(AUTH_NEXT_OPERATION, PERFORM_NATIVE_AUTH);
+		}
+		else {
+			resp.put(AUTH_NEXT_OPERATION, AUTH_CLIENT_AUTH_REQUEST);
+		}
 
 		return resp;
 	}
@@ -236,6 +309,7 @@ public class PamInteractiveAuthPlugin extends AuthPlugin {
 
 	private JsonNode stepAuthenticated(RcComm rcComm, JsonNode context) throws IRODSException, IOException {
 		ObjectNode resp = (ObjectNode) context.deepCopy();
+		sessionToken.value = resp.get("request_result").asText();
 		resp.put(AUTH_NEXT_OPERATION, PERFORM_NATIVE_AUTH);
 		return resp;
 	}
@@ -260,21 +334,20 @@ public class PamInteractiveAuthPlugin extends AuthPlugin {
 		// Remove the PAM password from the payload so it's not sent over the network.
 		resp.remove(AUTH_PASSWORD_KEY);
 
-		// Authenticate using the native authentication and the server generated
-		// password mapped to "request_result".
+		// Authenticate using the native authentication and the session token.
 		ObjectNode input = JsonUtil.getJsonMapper().createObjectNode();
-		input.put(AUTH_PASSWORD_KEY, resp.get("request_result").asText());
+		input.put(AUTH_PASSWORD_KEY, sessionToken.value);
 		AuthManager.authenticateClient(comm, new NativeAuthPlugin(), input);
-
-		// If everything completed successfully, the flow is complete, and we can
-		// consider the user to be logged in. The native auth flow was run, and so
-		// we trust the result.
-		resp.put(AUTH_NEXT_OPERATION, AUTH_FLOW_COMPLETE);
 
 		// The native auth plugin sets this on success, so this isn't necessary.
 		// We'll set it anyway to align with the C++ implementation, just to be on
 		// the safe side.
 		comm.loggedIn = true;
+
+		// If everything completed successfully, the flow is complete, and we can
+		// consider the user to be logged in. The native auth flow was run, and so
+		// we trust the result.
+		resp.put(AUTH_NEXT_OPERATION, AUTH_FLOW_COMPLETE);
 
 		return resp;
 	}
