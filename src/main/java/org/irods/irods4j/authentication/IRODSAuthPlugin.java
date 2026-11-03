@@ -81,8 +81,7 @@ public class IRODSAuthPlugin extends AuthPlugin {
 	 * password-based authentication via
 	 * {@link org.irods.irods4j.low_level.api.IRODSApi#rcAuthenticateClient}.
 	 *
-	 * @param password The password of the proxy user or client user.
-	 * @return The container holding the input arguments.
+	 * @param password The password of the proxy or client user.
 	 *
 	 * @since 0.8.0
 	 */
@@ -97,8 +96,7 @@ public class IRODSAuthPlugin extends AuthPlugin {
 	 * session-token-based authentication via
 	 * {@link org.irods.irods4j.low_level.api.IRODSApi#rcAuthenticateClient}.
 	 *
-	 * @param sessionToken The password of the proxy user or client user.
-	 * @return The container holding the input arguments.
+	 * @param sessionToken The authentication token for the proxy or client user.
 	 *
 	 * @since 0.8.0
 	 */
