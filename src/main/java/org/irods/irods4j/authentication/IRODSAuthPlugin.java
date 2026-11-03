@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.common.Reference;
-import org.irods.irods4j.input_validation.Preconditions;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.api.IRODSException;
 
@@ -75,52 +74,6 @@ public class IRODSAuthPlugin extends AuthPlugin {
 	@Override
 	public String getName() {
 		return "irods";
-	}
-
-	/**
-	 * This class is a container meant for storing a password string.
-	 * <p>
-	 * It is a support class designed for use with {@link IRODSAuthPlugin#initAuthArguments}.
-	 *
-	 * @since 0.8.0
-	 */
-	public static final class Password {
-
-		String value;
-
-		/**
-		 * Constructs a new Password instance.
-		 *
-		 * @param value The password string.
-		 */
-		public Password(String value) {
-			Preconditions.notNull(value, "String is null");
-			this.value = value;
-		}
-
-	}
-
-	/**
-	 * This class is a container meant for storing a session token string.
-	 * <p>
-	 * It is a support class designed for use with {@link IRODSAuthPlugin#initAuthArguments}.
-	 *
-	 * @since 0.8.0
-	 */
-	public static final class SessionToken {
-
-		String value;
-
-		/**
-		 * Constructs a new SessionToken instance.
-		 *
-		 * @param value The session token string.
-		 */
-		public SessionToken(String value) {
-			Preconditions.notNull(value, "String is null");
-			this.value = value;
-		}
-
 	}
 
 	/**
