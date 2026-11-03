@@ -72,7 +72,7 @@ public class PamPasswordAuthPlugin extends AuthPlugin {
 	 * Returns a map containing inputs for authenticating via
 	 * {@link org.irods.irods4j.low_level.api.IRODSApi#rcAuthenticateClient}
 	 *
-	 * @param password The password of the proxy user or client user.
+	 * @param password The password of the proxy or client user.
 	 * @param ttl      The amount of time (in hours) before the session expires.
 	 *                 Set to 0 to disable session expiration.
 	 *
