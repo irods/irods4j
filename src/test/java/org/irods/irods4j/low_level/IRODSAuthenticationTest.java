@@ -3,12 +3,15 @@ package org.irods.irods4j.low_level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.authentication.IRODSAuthPlugin;
+import org.irods.irods4j.authentication.Password;
+import org.irods.irods4j.authentication.SessionToken;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.Reference;
 import org.irods.irods4j.common.Versioning;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.connection.IRODSConnection;
 import org.irods.irods4j.high_level.connection.QualifiedUsername;
+import org.irods.irods4j.high_level.vfs.IRODSFilesystem;
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.api.IRODSException;
 import org.junit.jupiter.api.AfterAll;
@@ -33,7 +36,7 @@ public class IRODSAuthenticationTest {
 
 	// This rodsuser is created by the docker-compose.tls.yml project.
 	static String username = "alice";
-	static String password = "apass";
+	static Password password = new Password("apass");
 
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
@@ -69,6 +72,7 @@ public class IRODSAuthenticationTest {
 			}
 		}};
 
+		var homeCollection = String.format("/%s/home/%s", zone, username);
 		var sessionTokenRef = new Reference<String>();
 		var authPlugin = new IRODSAuthPlugin(true, sessionTokenRef);
 
@@ -79,7 +83,10 @@ public class IRODSAuthenticationTest {
 			var authSchemeSupported = Versioning.compareVersions(serverVersion, "5.1.0") >= 0;
 			assumeTrue(authSchemeSupported, "Requires server running iRODS 5.1.0 or later");
 
-			conn.authenticate(authPlugin, IRODSAuthPlugin.initAuthArguments(new IRODSAuthPlugin.Password(password)));
+			conn.authenticate(authPlugin, IRODSAuthPlugin.initAuthArguments(password));
+
+			// Test the connection.
+			assertTrue(IRODSFilesystem.isCollection(conn.getRcComm(), homeCollection));
 		}
 
 		assertNotNull(sessionTokenRef.value);
@@ -91,14 +98,17 @@ public class IRODSAuthenticationTest {
 		try (var conn = new IRODSConnection(options)) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
 			conn.authenticate(authPlugin,
-					IRODSAuthPlugin.initAuthArguments(new IRODSAuthPlugin.SessionToken(sessionTokenRef.value)));
+					IRODSAuthPlugin.initAuthArguments(new SessionToken(sessionTokenRef.value)));
+
+			// Test the connection.
+			assertTrue(IRODSFilesystem.isCollection(conn.getRcComm(), homeCollection));
 		}
 
 		// Show that the server rejects an invalid session token.
 		try (var conn = new IRODSConnection(options)) {
 			conn.connect(host, port, new QualifiedUsername(username, zone));
 			var e = assertThrows(IRODSException.class, () -> conn.authenticate(authPlugin,
-					IRODSAuthPlugin.initAuthArguments(new IRODSAuthPlugin.SessionToken("invalid-token"))));
+					IRODSAuthPlugin.initAuthArguments(new SessionToken("invalid-token"))));
 			assertTrue(e.getErrorCode() < 0);
 		}
 	}
