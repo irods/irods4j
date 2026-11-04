@@ -55,7 +55,7 @@ class RcTicketAdminTest {
 		input.KeyValPair_PI.ssLen = 0;
 
 		int ec = IRODSApi.rcTicketAdmin(comm, input);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 
 		// Delete the ticket.
 		input.arg1 = "delete";
@@ -63,7 +63,7 @@ class RcTicketAdminTest {
 		input.arg4 = "";
 
 		ec = IRODSApi.rcTicketAdmin(comm, input);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 	}
 
 }

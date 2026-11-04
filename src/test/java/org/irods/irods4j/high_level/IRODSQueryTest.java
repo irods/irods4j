@@ -78,7 +78,7 @@ class IRODSQueryTest {
 		assertTrue(mappings.containsKey("DATA_NAME"));
 
 		Map<String, String> column = mappings.get("DATA_NAME");
-		assertEquals(column.get("R_DATA_MAIN"), "data_name");
+		assertEquals("data_name", column.get("R_DATA_MAIN"));
 	}
 
 	@Test
@@ -96,7 +96,7 @@ class IRODSQueryTest {
 		IRODSQuery.executeSpecificQuery(conn.getRcComm(), "listGroupsForUser", bindArgs, row -> {
 			// On a fresh iRODS install, we expect the "rods" user to be a member of the
 			// "public" group only.
-			assertEquals(row.size(), 2);
+			assertEquals(2, row.size());
 
 			StringBuilder sb = new StringBuilder();
 			sb.append('[');
@@ -138,7 +138,7 @@ class IRODSQueryTest {
 
 		IRODSQuery.executeGenQuery1(conn.getRcComm(), input, row -> {
 			// Each row should contain 3 columns.
-			assertEquals(row.size(), 3);
+			assertEquals(3, row.size());
 
 			output.append('[');
 			for (int c = 0; c < row.size(); ++c) {

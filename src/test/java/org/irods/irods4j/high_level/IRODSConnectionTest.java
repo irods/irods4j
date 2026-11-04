@@ -87,7 +87,7 @@ class IRODSConnectionTest {
 		IRODSConnection conn = connectUsingTryWithResources();
 		assertNotNull(conn);
 		assertFalse(conn.isConnected());
-		assertThrows(IllegalStateException.class, () -> conn.getRcComm());
+		assertThrows(IllegalStateException.class, conn::getRcComm);
 	}
 
 	@Test

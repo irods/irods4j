@@ -56,12 +56,12 @@ class RcModAVUMetadataTest {
 		input.KeyValPair_PI = new KeyValPair_PI();
 
 		int ec = IRODSApi.rcModAVUMetadata(comm, input);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 
 		// Remove the recently added metadata from the user's home collection.
 		input.arg0 = "rm";
 		ec = IRODSApi.rcModAVUMetadata(comm, input);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 	}
 
 }

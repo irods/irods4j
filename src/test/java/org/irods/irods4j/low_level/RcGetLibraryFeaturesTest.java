@@ -43,7 +43,7 @@ class RcGetLibraryFeaturesTest {
 	void testRcGetLibraryFeatures() throws IOException, IRODSException {
 		Reference<String> output = new Reference<String>();
 		int ec = IRODSApi.rcGetLibraryFeatures(comm, output);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 		assertNotNull(output);
 		assertNotNull(output.value);
 		assertTrue(output.value.contains("IRODS_LIBRARY_FEATURE_GENQUERY2"));

@@ -50,7 +50,7 @@ class CollectionOperationsTest {
 		input.KeyValPair_PI.ssLen = 0; // Not necessary as shown through testing.
 
 		int ec = IRODSApi.rcCollCreate(comm, input);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 
 		// Delete the collection.
 		input.KeyValPair_PI.ssLen = 2;

@@ -83,7 +83,7 @@ class RcModDataObjMetaTest {
 		closeOptions.put("fd", fd);
 		String closeInput = JsonUtil.toJsonString(closeOptions);
 		int ec = IRODSApi.rcReplicaClose(comm, closeInput);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 	}
 
 	@AfterAll
@@ -120,7 +120,7 @@ class RcModDataObjMetaTest {
 		input.KeyValPair_PI.svalue.add(expectedChecksum);
 
 		int ec = IRODSApi.rcModDataObjMeta(comm, input);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 
 		Genquery2Input_PI gq2Input = new Genquery2Input_PI();
 		gq2Input.query_string = String.format("select COLL_NAME, DATA_NAME where DATA_CHECKSUM = '%s'",
@@ -130,7 +130,7 @@ class RcModDataObjMetaTest {
 		Reference<String> output = new Reference<String>();
 
 		ec = IRODSApi.rcGenQuery2(comm, gq2Input, output);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 		assertNotNull(output);
 		assertNotNull(output.value);
 
