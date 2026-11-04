@@ -2,7 +2,6 @@ package org.irods.irods4j.low_level;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,18 +79,18 @@ class RcExecMyRuleTest {
 		((STR_PI) mp.inOutStruct).myStr = "2";
 		input.MsParamArray_PI.MsParam_PI.add(mp);
 
-		Reference<MsParamArray_PI> output = new Reference<MsParamArray_PI>();
-
+		Reference<MsParamArray_PI> output = new Reference<>();
+		
 		int ec = IRODSApi.rcExecMyRule(comm, input, output);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 		assertNotNull(output);
 		assertNotNull(output.value);
-
+		
 		ExecCmdOut_PI ruleExecOut = (ExecCmdOut_PI) output.value.MsParam_PI.get(0).inOutStruct;
-		assertEquals(ruleExecOut.status, 0);
+		assertEquals(0, ruleExecOut.status);
 		log.debug("stdout buffer = {}", ruleExecOut.BinBytesBuf_PI.get(0).buf);
 		log.debug("stdout length (whitespace trimmed) = {}", ruleExecOut.BinBytesBuf_PI.get(0).buf.trim().length());
-		assertTrue((text + " 2").equals(ruleExecOut.BinBytesBuf_PI.get(0).buf.trim()));
+		assertEquals(text + " 2", ruleExecOut.BinBytesBuf_PI.get(0).buf.trim());
 	}
 
 }

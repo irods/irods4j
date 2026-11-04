@@ -63,7 +63,7 @@ class RcAtomicApplyAclOperationsTest {
 		System.out.println(operations);
 		Reference<String> output = new Reference<String>();
 		int ec = IRODSApi.rcAtomicApplyAclOperations(comm, operations, output);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 		assertNotNull(output);
 		assertNotNull(output.value);
 
@@ -75,7 +75,7 @@ class RcAtomicApplyAclOperationsTest {
 
 		operations = JsonUtil.toJsonString(inputStruct);
 		ec = IRODSApi.rcAtomicApplyAclOperations(comm, operations, output);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 		assertNotNull(output);
 		assertNotNull(output.value);
 	}

@@ -256,7 +256,7 @@ class IRODSDataObjectStreamTest {
 			// default options to ".close()" update the replica's status, size, and trigger
 			// policy.
 			long dataSize = IRODSFilesystem.dataObjectSize(comm, logicalPath);
-			assertEquals(dataSize, 300);
+			assertEquals(300, dataSize);
 
 			// Read the contents of the data object and assert it is what we wrote.
 			try (IRODSDataObjectStream in = new IRODSDataObjectStream(); IRODSConnectionPool.PoolConnection conn1 = connPool.getConnection()) {

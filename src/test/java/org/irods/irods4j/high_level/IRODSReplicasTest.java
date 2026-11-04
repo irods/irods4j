@@ -94,7 +94,7 @@ class IRODSReplicasTest {
 			// Show the admin cannot calculate a checksum if the admin flag isn't passed.
 			IRODSException ex = assertThrows(IRODSException.class, () -> IRODSReplicas.replicaChecksum(conn.getRcComm(),
 					logicalPath, 0, IRODSReplicas.VerificationCalculation.ALWAYS));
-			assertEquals(ex.getErrorCode(), IRODSErrorCodes.CAT_NO_ACCESS_PERMISSION);
+			assertEquals(IRODSErrorCodes.CAT_NO_ACCESS_PERMISSION, ex.getErrorCode());
 
 			// Show the admin can calculate a checksum if the admin flag is passed.
 			String checksum = IRODSReplicas.replicaChecksum(IRODSReplicas.asAdmin, conn.getRcComm(), logicalPath, 0,

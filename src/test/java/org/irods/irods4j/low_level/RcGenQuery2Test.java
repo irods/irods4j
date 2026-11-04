@@ -50,7 +50,7 @@ class RcGenQuery2Test {
 
 		Reference<String> output = new Reference<String>();
 
-		assertEquals(IRODSApi.rcGenQuery2(comm, input, output), 0);
+		assertEquals(0, IRODSApi.rcGenQuery2(comm, input, output));
 		assertNotNull(output);
 		assertNotNull(output.value);
 		assertTrue(output.value.contains("[\"/tempZone/home/rods\"]"));
@@ -67,7 +67,7 @@ class RcGenQuery2Test {
 
 		Reference<String> output = new Reference<String>();
 
-		assertEquals(IRODSApi.rcGenQuery2(comm, input, output), 0);
+		assertEquals(0, IRODSApi.rcGenQuery2(comm, input, output));
 		assertNotNull(output);
 		assertNotNull(output.value);
 		assertTrue(output.value.contains("[\"/tempZone/home/rods\"]"));
