@@ -3,6 +3,7 @@ package org.irods.irods4j.high_level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.authentication.NativeAuthPlugin;
+import org.irods.irods4j.authentication.Password;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.catalog.IRODSQuery;
@@ -32,7 +33,7 @@ class IRODSMetadataTest {
 	static int port = 1247;
 	static String zone = "tempZone";
 	static String username = "rods";
-	static String password = "rods";
+	static Password password = new Password("rods");
 	static IRODSConnection conn;
 
 	@BeforeAll

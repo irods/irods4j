@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import org.irods.irods4j.authentication.NativeAuthPlugin;
+import org.irods.irods4j.authentication.Password;
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
 import org.irods.irods4j.low_level.protocol.packing_instructions.KeyValPair_PI;
@@ -21,7 +22,7 @@ class RcTicketAdminTest {
 	static int port = 1247;
 	static String zone = "tempZone";
 	static String username = "rods";
-	static String password = "rods";
+	static Password password = new Password("rods");
 	static RcComm comm;
 
 	@BeforeAll

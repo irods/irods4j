@@ -13,6 +13,7 @@ import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.authentication.NativeAuthPlugin;
+import org.irods.irods4j.authentication.Password;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.administration.IRODSUsers;
@@ -35,7 +36,7 @@ class IRODSUsersTest {
 	static int port = 1247;
 	static String zone = "tempZone";
 	static String username = "rods";
-	static String password = "rods";
+	static Password password = new Password("rods");
 	static RcComm comm;
 
 	static User rodsuser = new User("TestIRODSUsers_alice", Optional.of(zone));
@@ -75,14 +76,15 @@ class IRODSUsersTest {
 		// Change the rodsuser's password.
 		var prop = new IRODSUsers.UserPasswordProperty();
 		prop.value = rodsuserPassword;
-		prop.requesterPassword = password;
+		prop.requesterPassword = password.getValue();
 		assertDoesNotThrow(() -> IRODSUsers.modifyUser(comm, rodsuser, prop));
 
 		// Show that the rodsuser can authenticate using the updated password.
 		var comm1 = IRODSApi.rcConnect(host, port, rodsuser.name, rodsuser.zone, Optional.empty(), Optional.empty(),
 				Optional.empty(), Optional.empty());
 		assertNotNull(comm1);
-		IRODSApi.rcAuthenticateClient(comm1, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(prop.value, 0L));
+		IRODSApi.rcAuthenticateClient(comm1, new NativeAuthPlugin(),
+				NativeAuthPlugin.initAuthArguments(new Password(prop.value), 0L));
 		IRODSApi.rcDisconnect(comm1);
 	}
 

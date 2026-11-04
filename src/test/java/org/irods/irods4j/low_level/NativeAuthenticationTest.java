@@ -4,16 +4,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.authentication.NativeAuthPlugin;
+import org.irods.irods4j.authentication.Password;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.Reference;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.administration.IRODSUsers;
 import org.irods.irods4j.high_level.administration.IRODSZones;
+import org.irods.irods4j.high_level.catalog.IRODSQuery;
 import org.irods.irods4j.high_level.vfs.IRODSFilesystem;
 import org.irods.irods4j.low_level.api.IRODSApi;
 import org.irods.irods4j.low_level.api.IRODSApi.RcComm;
@@ -29,7 +32,7 @@ class NativeAuthenticationTest {
 	static int port = 1247;
 	static String zone = "tempZone";
 	static String username = "rods";
-	static String password = "rods";
+	static Password password = new Password("rods");
 	static RcComm comm;
 	static String homeCollection = String.format("/%s/home/%s", zone, username);
 
@@ -49,13 +52,15 @@ class NativeAuthenticationTest {
 
 	@Test
 	void testNativeAuthentication() throws Exception {
-		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
+		var input = NativeAuthPlugin.initAuthArguments(password, 0L);
+		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), input);
 		assertTrue(IRODSFilesystem.isCollection(comm, homeCollection)); // Test the connection.
 	}
 
 	@Test
 	void testAuthenticateAsAnonymousUser() throws Exception {
-		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(password, 0L));
+		var input = NativeAuthPlugin.initAuthArguments(password, 0L);
+		IRODSApi.rcAuthenticateClient(comm, new NativeAuthPlugin(), input);
 
 		// Add the anonymous user to the system if not present.
 		var anonymousUser = new IRODSUsers.User("anonymous", Optional.of(zone));
@@ -71,8 +76,7 @@ class NativeAuthenticationTest {
 					Optional.empty(), Optional.empty());
 			assertNotNull(anonymousComm);
 			try {
-				var input = NativeAuthPlugin.initAuthArguments("" , 0L);
-				IRODSApi.rcAuthenticateClient(anonymousComm, new NativeAuthPlugin(), input);
+				IRODSApi.rcAuthenticateClient(anonymousComm, new NativeAuthPlugin(), new HashMap<>());
 				// Test the connection.
 				var rows = IRODSQuery.executeGenQuery2(anonymousComm, "select ZONE_NAME");
 				assertNotNull(rows);
@@ -105,7 +109,7 @@ class NativeAuthenticationTest {
 		assertNotNull(comm1);
 		try {
 			IRODSApi.rcAuthenticateClient(comm1, new NativeAuthPlugin(),
-					NativeAuthPlugin.initAuthArguments(ttlPasswordRef.value));
+					NativeAuthPlugin.initAuthArguments(new Password(ttlPasswordRef.value)));
 			assertTrue(IRODSFilesystem.isCollection(comm1, homeCollection)); // Test the connection.
 		} finally {
 			IRODSApi.rcDisconnect(comm1);

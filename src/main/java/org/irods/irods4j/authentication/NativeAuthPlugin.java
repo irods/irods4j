@@ -85,21 +85,21 @@ public class NativeAuthPlugin extends AuthPlugin {
 	 *
 	 * @since 0.8.0
 	 */
-	public static Map<String, Object> initAuthArguments(String password, long ttl) {
+	public static Map<String, Object> initAuthArguments(Password password, long ttl) {
 		var input = new HashMap<String, Object>();
-		input.put(AUTH_PASSWORD_KEY, password);
+		input.put(AUTH_PASSWORD_KEY, password.value);
 		input.put(AUTH_TTL_KEY, String.valueOf(ttl));
 		return input;
 	}
 
 	/**
-	 * @see #initAuthArguments(String, long)
+	 * @see #initAuthArguments(Password, long)
 	 *
 	 * @since 0.8.0
 	 */
-	public static Map<String, Object> initAuthArguments(String password) {
+	public static Map<String, Object> initAuthArguments(Password password) {
 		var input = new HashMap<String, Object>();
-		input.put(AUTH_PASSWORD_KEY, password);
+		input.put(AUTH_PASSWORD_KEY, password.value);
 		return input;
 	}
 
