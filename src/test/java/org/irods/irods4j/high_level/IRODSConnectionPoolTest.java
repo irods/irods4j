@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.authentication.NativeAuthPlugin;
+import org.irods.irods4j.authentication.Password;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.administration.IRODSUsers;
@@ -40,7 +41,7 @@ class IRODSConnectionPoolTest {
 	static String zone = "tempZone";
 
 	static String adminUsername = "rods";
-	static String adminPassword = "rods";
+	static Password adminPassword = new Password("rods");
 
 	// Used to verify proxy connection support is functional.
 	static String clientUsername = "alice";
