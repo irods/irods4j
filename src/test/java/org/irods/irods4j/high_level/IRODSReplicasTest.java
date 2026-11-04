@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.irods.irods4j.authentication.NativeAuthPlugin;
+import org.irods.irods4j.authentication.Password;
 import org.irods.irods4j.common.JsonUtil;
 import org.irods.irods4j.common.XmlUtil;
 import org.irods.irods4j.high_level.administration.IRODSUsers;
@@ -36,7 +37,7 @@ class IRODSReplicasTest {
 	static int port = 1247;
 	static String zone = "tempZone";
 	static String username = "rods";
-	static String password = "rods";
+	static Password password = new Password("rods");
 	static IRODSConnection conn;
 
 	static User rodsuser = new User("TestIRODSReplicas_alice", Optional.of(zone));
@@ -71,13 +72,14 @@ class IRODSReplicasTest {
 			// Set the user's password so we can authenticate as them.
 			UserPasswordProperty prop = new UserPasswordProperty();
 			prop.value = rodsuserPassword;
-			prop.requesterPassword = password;
+			prop.requesterPassword = password.getValue();
 			IRODSUsers.modifyUser(conn.getRcComm(), rodsuser, prop);
 
 			// Create a new data object as the rodsuser.
 			try (IRODSConnection rodsuserConn = new IRODSConnection()) {
 				rodsuserConn.connect(host, port, new QualifiedUsername(rodsuser.name, rodsuser.zone));
-				rodsuserConn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(prop.value, 0L));
+				rodsuserConn.authenticate(new NativeAuthPlugin(),
+						NativeAuthPlugin.initAuthArguments(new Password(prop.value), 0L));
 
 				try (IRODSDataObjectStream stream = new IRODSDataObjectStream()) {
 					stream.open(rodsuserConn.getRcComm(), logicalPath,
@@ -102,7 +104,8 @@ class IRODSReplicasTest {
 		} finally {
 			try (IRODSConnection rodsuserConn = new IRODSConnection()) {
 				rodsuserConn.connect(host, port, new QualifiedUsername(rodsuser.name, rodsuser.zone));
-				rodsuserConn.authenticate(new NativeAuthPlugin(), NativeAuthPlugin.initAuthArguments(rodsuserPassword, 0L));
+				rodsuserConn.authenticate(new NativeAuthPlugin(),
+						NativeAuthPlugin.initAuthArguments(new Password(rodsuserPassword), 0L));
 				IRODSFilesystem.remove(rodsuserConn.getRcComm(), logicalPath, RemoveOptions.NO_TRASH);
 			} catch (Exception e) {
 				log.error(e.getMessage());
