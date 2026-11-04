@@ -73,8 +73,8 @@ class IRODSRulesTest {
 		var results = IRODSRules.executeRule(conn.getRcComm(), ruleArgs);
 		assertNotNull(results);
 		assertFalse(results.isEmpty());
-		assertEquals(results.get("stdout"), msg);
-		assertEquals(results.get("stderr"), "");
+		assertEquals(msg, results.get("stdout"));
+		assertEquals("", results.get("stderr"));
 	}
 
 	@Test
@@ -90,8 +90,8 @@ class IRODSRulesTest {
 		var results = IRODSRules.executeRule(conn.getRcComm(), ruleArgs);
 		assertNotNull(results);
 		assertFalse(results.isEmpty());
-		assertEquals(results.get("*name"), name);
-		assertEquals(results.get("*role"), role);
+		assertEquals(name, results.get("*name"));
+		assertEquals(role, results.get("*role"));
 	}
 
 }

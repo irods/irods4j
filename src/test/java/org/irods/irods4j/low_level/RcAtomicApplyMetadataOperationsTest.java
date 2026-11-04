@@ -69,10 +69,10 @@ class RcAtomicApplyMetadataOperationsTest {
 		var output = new Reference<String>();
 
 		var ec = IRODSApi.rcAtomicApplyMetadataOperations(comm, operations, output);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 		assertNotNull(output);
 		assertNotNull(output.value);
-		assertTrue("{}".equals(output.value.trim()));
+		assertEquals("{}", output.value.trim());
 
 		// Show the metadata exists on the user's home collection.
 		var gq2Input = new Genquery2Input_PI();
@@ -82,7 +82,7 @@ class RcAtomicApplyMetadataOperationsTest {
 		gq2Input.zone = zone;
 
 		ec = IRODSApi.rcGenQuery2(comm, gq2Input, output);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 		assertNotNull(output);
 		assertNotNull(output.value);
 		var expectedString = String.format("[\"%s\",\"%s\",\"%s\"]", attrName, attrValue, attrUnits);
@@ -99,10 +99,10 @@ class RcAtomicApplyMetadataOperationsTest {
 		output = new Reference<String>();
 
 		ec = IRODSApi.rcAtomicApplyMetadataOperations(comm, operations, output);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 		assertNotNull(output);
 		assertNotNull(output.value);
-		assertTrue("{}".equals(output.value.trim()));
+		assertEquals("{}", output.value.trim());
 
 		// Show the metadata no longer exists on the collection.
 		gq2Input = new Genquery2Input_PI();
@@ -112,10 +112,10 @@ class RcAtomicApplyMetadataOperationsTest {
 		gq2Input.zone = zone;
 
 		ec = IRODSApi.rcGenQuery2(comm, gq2Input, output);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 		assertNotNull(output);
 		assertNotNull(output.value);
-		assertTrue("[]".equals(output.value));
+		assertEquals("[]", output.value);
 	}
 
 }
