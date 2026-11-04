@@ -59,7 +59,7 @@ class RcTouchTest {
 		var input = JsonUtil.toJsonString(touchInput);
 		System.out.println(input);
 		var ec = IRODSApi.rcTouch(comm, input);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 
 		// Show the collection's mtime has been changed to the target mtime.
 		var statInput = new DataObjInp_PI();
@@ -72,7 +72,7 @@ class RcTouchTest {
 		assertFalse(ec < 0);
 		assertNotNull(output);
 		assertNotNull(output.value);
-		assertEquals(Integer.parseInt(output.value.modifyTime), mtime);
+		assertEquals(mtime, Integer.parseInt(output.value.modifyTime));
 	}
 
 }

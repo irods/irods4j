@@ -55,14 +55,14 @@ class RcGeneralAdminTest {
 		input.arg4 = "";
 		input.arg5 = "";
 		input.arg6 = "";
-		assertEquals(IRODSApi.rcGeneralAdmin(comm, input), 0);
+		assertEquals(0, IRODSApi.rcGeneralAdmin(comm, input));
 
 		// Remove resource.
 		input.arg0 = "rm";
 		input.arg1 = "resource";
 		input.arg2 = rescName;
 		input.arg3 = ""; // Dryrun flag (cannot be null)
-		assertEquals(IRODSApi.rcGeneralAdmin(comm, input), 0);
+		assertEquals(0, IRODSApi.rcGeneralAdmin(comm, input));
 	}
 
 	@Test
@@ -80,7 +80,7 @@ class RcGeneralAdminTest {
 			input.arg4 = "";
 			input.arg5 = "";
 			input.arg6 = "";
-			assertEquals(IRODSApi.rcGeneralAdmin(comm, input), 0);
+			assertEquals(0, IRODSApi.rcGeneralAdmin(comm, input));
 		}
 
 		// Create a new connection so the resources can be seen/used.
@@ -95,7 +95,7 @@ class RcGeneralAdminTest {
 		input.arg2 = rescName1;
 		input.arg3 = rescName2;
 		input.arg4 = ""; // Context string
-		assertEquals(IRODSApi.rcGeneralAdmin(comm1, input), 0);
+		assertEquals(0, IRODSApi.rcGeneralAdmin(comm1, input));
 
 		// Refresh the connection so the resources can be seen/used.
 		IRODSApi.rcDisconnect(comm1);
@@ -109,7 +109,7 @@ class RcGeneralAdminTest {
 		input.arg1 = "childfromresc";
 		input.arg2 = rescName1;
 		input.arg3 = rescName2;
-		assertEquals(IRODSApi.rcGeneralAdmin(comm1, input), 0);
+		assertEquals(0, IRODSApi.rcGeneralAdmin(comm1, input));
 
 		// Make sure to disconnect the intermediate connection.
 		IRODSApi.rcDisconnect(comm1);
@@ -120,7 +120,7 @@ class RcGeneralAdminTest {
 			input.arg1 = "resource";
 			input.arg2 = rescName;
 			input.arg3 = "";
-			assertEquals(IRODSApi.rcGeneralAdmin(comm, input), 0);
+			assertEquals(0, IRODSApi.rcGeneralAdmin(comm, input));
 		}
 	}
 

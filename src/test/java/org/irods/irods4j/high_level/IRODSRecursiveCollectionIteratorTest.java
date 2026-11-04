@@ -101,7 +101,7 @@ class IRODSRecursiveCollectionIteratorTest {
 			input.KeyValPair_PI.svalue = new ArrayList<>();
 			input.KeyValPair_PI.keyWord.add(IRODSKeywords.FORCE_FLAG);
 			input.KeyValPair_PI.svalue.add("");
-			assertEquals(IRODSApi.rcDataObjUnlink(conn.getRcComm(), input), 0);
+			assertEquals(0, IRODSApi.rcDataObjUnlink(conn.getRcComm(), input));
 		}
 	}
 

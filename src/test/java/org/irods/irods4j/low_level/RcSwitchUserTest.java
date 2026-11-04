@@ -2,7 +2,6 @@ package org.irods.irods4j.low_level;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -53,7 +52,7 @@ class RcSwitchUserTest {
 		addUserInput.arg4 = zone;
 
 		var ec = IRODSApi.rcGeneralAdmin(comm, addUserInput);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 
 		// Become the new rodsuser.
 		var switchUserInput = new SwitchUserInp_PI();
@@ -67,13 +66,13 @@ class RcSwitchUserTest {
 		switchUserInput.KeyValPair_PI.svalue.add("");
 
 		ec = IRODSApi.rcSwitchUser(comm, switchUserInput);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 		// The client user information in the RcComm should reflect the new rodsuser.
-		assertTrue(otherUser.equals(comm.clientUsername));
-		assertTrue(zone.equals(comm.clientUserZone));
+		assertEquals(otherUser, comm.clientUsername);
+		assertEquals(zone, comm.clientUserZone);
 		// The proxy user information in the RcComm should reflect the new rodsuser.
-		assertTrue(otherUser.equals(comm.proxyUsername));
-		assertTrue(zone.equals(comm.proxyUserZone));
+		assertEquals(otherUser, comm.proxyUsername);
+		assertEquals(zone, comm.proxyUserZone);
 
 		// Connect as the local rodsadmin and remove the recently created user.
 		// This is required because we became a rodsuser, which means we lost
@@ -91,7 +90,7 @@ class RcSwitchUserTest {
 		removeUserInput.arg3 = zone;
 
 		ec = IRODSApi.rcGeneralAdmin(adminComm, removeUserInput);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 
 		IRODSApi.rcDisconnect(adminComm);
 	}

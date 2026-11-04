@@ -78,7 +78,7 @@ class RcDataObjChksumTest {
 		closeOptions.put("fd", fd);
 		var closeInput = JsonUtil.toJsonString(closeOptions);
 		var ec = IRODSApi.rcReplicaClose(comm, closeInput);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 	}
 
 	@AfterAll
@@ -110,9 +110,9 @@ class RcDataObjChksumTest {
 		var output = new Reference<String>();
 
 		var ec = IRODSApi.rcDataObjChksum(comm, input, output);
-		assertEquals(ec, 0);
+		assertEquals(0, ec);
 		assertNotNull(output);
-		assertTrue("sha2:S8C1OsiUDW26PD33h0Y1jSUjKgEsG5G6449Ko4wsW5A=".equals(output.value));
+		assertEquals("sha2:S8C1OsiUDW26PD33h0Y1jSUjKgEsG5G6449Ko4wsW5A=", output.value);
 	}
 
 }
