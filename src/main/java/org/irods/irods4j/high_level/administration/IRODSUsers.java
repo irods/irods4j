@@ -45,7 +45,10 @@ public class IRODSUsers {
 
 	/**
 	 * A class designed to represent an iRODS user.
-	 * 
+	 * <p>
+	 * It is the developer's responsibility to make sure member variables
+	 * of this class always contain non-null values before use.
+	 *
 	 * @since 0.1.0
 	 */
 	public static final class User implements Comparable<User> {
@@ -56,20 +59,19 @@ public class IRODSUsers {
 		/**
 		 * Initializes a {@link User} without a name or zone.
 		 * 
-		 * It is the developer's responsibility to make sure objects constructed via
-		 * this constructor are updated with non-null values before use.
-		 * 
 		 * @since 0.1.0
 		 */
 		public User() {
+			name = "";
+			zone = "";
 		}
 
 		/**
 		 * Initializes a {@link User} with the given name and zone.
-		 * 
+		 *
 		 * @param name The unqualified name component of the username.
 		 * @param zone The zone component of the username.
-		 * 
+		 *
 		 * @since 0.1.0
 		 */
 		public User(String name, Optional<String> zone) {
@@ -104,7 +106,10 @@ public class IRODSUsers {
 
 	/**
 	 * A class designed to represent an iRODS group.
-	 * 
+	 * <p>
+	 * It is the developer's responsibility to make sure member variables
+	 * of this class always contain non-null values before use.
+	 *
 	 * @since 0.1.0
 	 */
 	public static final class Group implements Comparable<Group> {
@@ -114,12 +119,10 @@ public class IRODSUsers {
 		/**
 		 * Initializes a {@link Group} without a name.
 		 * 
-		 * It is the developer's responsibility to make sure objects constructed via
-		 * this constructor are updated with non-null values before use.
-		 * 
 		 * @since 0.1.0
 		 */
 		public Group() {
+			name = "";
 		}
 
 		/**
