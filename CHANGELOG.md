@@ -11,6 +11,45 @@ and this project **only** adheres to the following _(as defined at [Semantic Ver
 > - MINOR version when you add functionality in a backward compatible manner
 > - PATCH version when you make backward compatible bug fixes
 
+## [0.8.0] - 2026-11-06
+
+> [!IMPORTANT]
+> This release introduces breaking changes and will require modifications to client code. See **Changed** section for details.
+
+This release adds support for the new **irods** authentication scheme and passive logical quotas. These features require a minimum server version of 5.1.0.
+
+This release also reworks authentication interfaces to accept more options, exposes tokens for reauthentication, adds support for proxy users to the connection pool, and adds convenience functions for correctly preparing arguments for the authentication plugins.
+
+### Security
+
+- Bump log4j version to 2.26.1 (#171).
+
+### Changed
+
+- Default construct `User`/`Group` instances with empty strings (#178).
+- Rework `rcAuthenticateClient` function to accept more authentication plugin options (#185).
+- Rework authentication function of `IRODSConnection` to accept more authentication plugin options (#185).
+
+### Fixed
+
+- Fix name of low level RegDataObj API function (#180).
+- Do not send password on first network request during native authentication (#188).
+- Honor `count` parameter in obfuscation support function `copyByteArrayToIntArray` (#192).
+
+### Added
+
+- Add support for new irods authentication scheme (#139).
+- Add support for initializing connection pool with proxy user (#160). 
+- Add support for passive logical quotas API endpoint (#174).
+- Add missing iRODS error codes (#175).
+- Add convenience functions to ease preparation of arguments for authentication plugins (#185, #187).
+- Expose functions for obfuscation (#187).
+- Add support for GetLimitedPassword API endpoint (#187).
+- Add support for TTL to native authentication plugin (#187).
+- Expose authentication tokens for pam_password authentication plugin (#187).
+- Expose authentication tokens for pam_interactive authentication plugin (#187).
+- Add single argument constructor to `User` class for local zone usage (#196).
+
 ## [0.7.0] - 2026-07-29
 
 This release fixes a bug that caused the connected iRODS agent to crash during a TLS-enabled server redirect. It also improves handling of single quotes in logical paths.
