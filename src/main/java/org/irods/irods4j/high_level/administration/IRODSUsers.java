@@ -79,6 +79,18 @@ public class IRODSUsers {
 			this.zone = zone.orElse("");
 		}
 
+		/**
+		 * Initializes a {@link User} with the given name. The zone component
+		 * of the user's name will be set to an empty string.
+		 * 
+		 * @param name The unqualified name component of the username.
+		 *
+		 * @since 0.8.0
+		 */
+		public User(String name) {
+			this(name, Optional.empty());
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
