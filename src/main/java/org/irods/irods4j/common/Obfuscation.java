@@ -60,19 +60,19 @@ public class Obfuscation {
 		// Get the MD5 digest of the key to get some bytes with many different values.
 		var hexKey = obfMakeOneWayHash(hashAlgo, keyBuf, keyBuf.length);
 		var buffer = new int[64]; // Each digest is 16 bytes, 4 of them.
-		copyIntArrayToByteArray(buffer, 0, hexKey, hexKey.length);
+		copyByteArrayToIntArray(buffer, 0, hexKey, hexKey.length);
 
 		// Hash of the hash.
 		var v = obfMakeOneWayHash(hashAlgo, buffer, 16);
-		copyIntArrayToByteArray(buffer, 16, v, v.length);
+		copyByteArrayToIntArray(buffer, 16, v, v.length);
 
 		// Hash of two hashes.
 		v = obfMakeOneWayHash(hashAlgo, buffer, 32);
-		copyIntArrayToByteArray(buffer, 32, v, v.length);
+		copyByteArrayToIntArray(buffer, 32, v, v.length);
 
 		// Hash of two hashes.
 		v = obfMakeOneWayHash(hashAlgo, buffer, 32);
-		copyIntArrayToByteArray(buffer, 48, v, v.length);
+		copyByteArrayToIntArray(buffer, 48, v, v.length);
 
 		final var MAX_PASSWORD_LEN = 50;
 
@@ -160,12 +160,20 @@ public class Obfuscation {
 	}
 
 	/**
+	 * Copy range from byte buffer to an integer buffer.
+	 * <p>
+	 * This function intentionally DOES NOT perform any bounds checking.
+	 *
+	 * @param dst    The integer buffer to copy into.
+	 * @param offset The offset into the integer buffer to start copying.
+	 * @param src    The byte buffer to copy from.
+	 * @param count  The number of bytes to copy from the byte buffer.
+	 *
 	 * @since 0.8.0
 	 */
-	public static void copyIntArrayToByteArray(int[] dst, int dstOffset, byte[] src, int count) {
-		// TODO(#192): count isn't used. Is this a bug?
-		for (int i = 0; i < src.length; ++i) {
-			dst[i + dstOffset] = src[i] & 0xff;
+	public static void copyByteArrayToIntArray(int[] dst, int offset, byte[] src, int count) {
+		for (int i = 0; i < count; ++i) {
+			dst[i + offset] = src[i] & 0xff;
 		}
 	}
 }
